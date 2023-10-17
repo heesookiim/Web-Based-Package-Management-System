@@ -19,7 +19,7 @@ describe('analyzePackages', () => {
     });
 
     it('should return a rating of 1 for a GitHub link with all non-constraint dependencies', async () => {
-        const gitHubLink = 'https://github.com/bhatnag8/no-dependencies-test-repo';
+        const gitHubLink = 'https://github.com/hall657/461Project-Phase1';
         const rating = await analyzePackages(gitHubLink);
         expect(rating).toBe(1);
     });
