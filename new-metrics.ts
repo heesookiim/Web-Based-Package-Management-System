@@ -1,17 +1,6 @@
 const axios = require('axios');
 const winston = require('winston');
-
-/** Logging format from Phase-1 **/
-const logLevels = ['error', 'info', 'debug'];
-const logLevel = logLevels[Number(process.env.LOG_LEVEL) || 0];
-const logFile = process.env.LOG_FILE;
-const logger = winston.createLogger({
-    level: logLevel,
-    format: winston.format.simple(),
-    transports: [
-        new winston.transports.File({ filename: logFile })
-    ]
-});
+import { logger } from "./analyze";
 
 let count_constraint = 0; // count of how many dependencies are constraint to a particular version
 let count_nonConstraint = 0; // count of how many dependencies are not constraint to a particular version
