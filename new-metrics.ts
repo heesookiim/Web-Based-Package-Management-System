@@ -18,7 +18,7 @@ let count_nonConstraint = 0; // count of how many dependencies are not constrain
 let dependencies = false; // flag to check if there are dependencies in the package.json file (true if greater than 0)
 
 // function which inspects only the package.json file from a GitHub repo link
-async function getPackageJsonFromGitHubRepo(gitHubLink) {
+async function getPackageJsonFromGitHubRepo(gitHubLink: string) {
     logger.debug(`Entering getPackageJsonFromGitHubRepo function for link: ${gitHubLink}`);
     
     // converts the GitHub link to raw.githubusercontent.com link
@@ -44,7 +44,7 @@ async function getPackageJsonFromGitHubRepo(gitHubLink) {
 }
 
 // function which inspects the type of dependencies from a package.json response
-function countPackagesWithCaretRange(packageJson, dependencyType) {
+function countPackagesWithCaretRange(packageJson: any, dependencyType: string) {
     logger.debug(`Entering countPackagesWithCaretRange function for dependency type: ${dependencyType}`);
     
     // checks if the dependency t
@@ -64,10 +64,15 @@ function countPackagesWithCaretRange(packageJson, dependencyType) {
 }
 
 // main function of the file calls the required functions for a GitHub repo link
-export async function analyzePackages(gitHubLink): Promise<any> {
+export async function analyzePackages(gitHubLink: string): Promise<any> {
     logger.info(`Analyzing GitHub Link: ${gitHubLink}`);
     let rating = 1; // if no dependencies exist then the rating is 1
     
+    /** reset **/
+    count_constraint = 0; // count of how many dependencies are constraint to a particular version
+    count_nonConstraint = 0; // count of how many dependencies are not constraint to a particular version
+    dependencies = false; // flag to check if there are dependencies in the package.json file (true if greater than 0)
+
     try {
         const packageJson = await getPackageJsonFromGitHubRepo(gitHubLink); // converts the gitHubLink to a raw GitHub response for that file
         countPackagesWithCaretRange(packageJson, 'dependencies'); // analyzes the dependencies data type from the response
