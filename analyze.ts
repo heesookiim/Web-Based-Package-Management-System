@@ -18,7 +18,7 @@ if (!logFile || !logFile.trim()) {
 } else if (!fs.existsSync(logFile)) {
     fs.writeFileSync(logFile, '');
 }
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
     level: logLevel,
     format: winston.format.simple(),
     transports: [
