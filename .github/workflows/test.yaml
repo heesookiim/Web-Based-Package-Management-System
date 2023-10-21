@@ -1,0 +1,28 @@
+# adapted from Chombler/CI-demo and hall657/461Project-Phase1
+# run tests on pull requests and when pushed to main
+name: test
+on:
+  push:
+    branches: [ main ]
+  
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Use node 18.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x  
+        
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Jest test
+        run: npm run test
+
