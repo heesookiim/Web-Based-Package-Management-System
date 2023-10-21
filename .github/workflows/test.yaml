@@ -24,5 +24,6 @@ jobs:
         run: npm ci
       
       - name: Jest test
+        env: ${{ secrets.GITHUB_TOKEN }}
         run: npm test
 
