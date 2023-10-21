@@ -1,22 +1,22 @@
 {
-  "name": "project-mateusz",
+  "name": "461Project-Phase2",
   "version": "1.0.0",
-  "description": "phase1",
+  "description": "phase2",
   "main": "index.js",
   "scripts": {
-    "test": "jest --json --outputFile=test_output.json > /dev/null 2>&1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RomanczuG/project-mateusz.git"
+    "url": "git+https://github.com/hall657/461Project-Phase2"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RomanczuG/project-mateusz/issues"
+    "url": "https://github.com/hall657/461Project-Phase2/issues"
   },
-  "homepage": "https://github.com/RomanczuG/project-mateusz#readme",
+  "homepage": "https://github.com/hall657/461Project-Phase2#readme",
   "devDependencies": {
     "@types/jest": "^29.5.5",
     "@types/node": "^20.5.9",
