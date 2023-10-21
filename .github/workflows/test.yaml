@@ -26,5 +26,7 @@ jobs:
       - name: Jest test
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOG_LEVEL: 0
+          LOG_FILE: 'log.txt'
         run: npm test
 
