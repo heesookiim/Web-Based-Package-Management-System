@@ -32,6 +32,11 @@ export async function getPackageServer(dataUrl: string, secretToken: string): Pr
     });
   
     // GET /package/{id}
+    app.get('/package/', (req: Request, res: Response) => {
+        logger.warn(`Package ID is missing`);
+        return res.status(400).json({ error: 'Unauthorized' });
+    });
+    
     app.get('/package/:id', (req: Request, res: Response) => {
         logger.info(`Fetching package with ID ${req.params.id}`);
 
@@ -45,6 +50,32 @@ export async function getPackageServer(dataUrl: string, secretToken: string): Pr
 
         res.json(pkg);
     });
+
+    // // GET /package/{id}/rate
+    // app.get('/package/:id/rate', (req: Request, res: Response) => {
+    //     logger.info(`Fetching rating for package with ID ${req.params.id}`);
+    
+    //     const packageId = req.params.id;
+    //     const pkg = packages.find(p => p.metadata.ID === packageId);
+    
+    //     if (!pkg) {
+    //         logger.warn(`Package with ID ${packageId} not found`);
+    //         return res.status(404).json({ error: 'Package does not exist.' });
+    //     }
+    
+    //     // TODO: Fetch the rating for the package.
+    //     // For now, let's assume every package has a rating stored in a `rating` property.
+    //     // If the rating wasn't computed successfully or if there's an error, you might want to handle it here.
+    //     const rating: PackageRating | undefined = pkg.rating;
+    
+    //     if (!rating) {
+    //         // This assumes that if a rating isn't present, it's because of an error during computation.
+    //         // You might need more specific error handling based on your application's needs.
+    //         return res.status(500).json({ error: 'The package rating system choked on at least one of the metrics.' });
+    //     }
+    
+    //     res.json(rating);
+    // });
   
     return app;
   }

@@ -34,7 +34,6 @@ describe('GET /package/{id}', () => {
     beforeEach(async () => {
         // Set up the mock implementation for axios.get
         mockAxios.get.mockResolvedValue({ data: mockData });
-
         app = await getPackageServer('mockUrl', 'mockSecretToken');
     });
 
@@ -42,6 +41,29 @@ describe('GET /package/{id}', () => {
         jest.resetAllMocks();
     });
 
+    it('should return 400 if package ID is missing', async () => {
+        const response = await request(app)
+            .get('/package/')
+            .set('X-Authorization', 'mockSecretToken');
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ error: 'Unauthorized' });  
+    });
+
+    it('should return 400 if unauthorized due to missing token', async () => {
+        const response = await request(app).get('/package/1');
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ error: 'Unauthorized' });
+    });
+
+    it('should return 400 if unauthorized due to invalid token', async () => {
+        const response = await request(app)
+            .get('/package/1')
+            .set('X-Authorization', 'wrongSecretToken');  // Using an incorrect token for this test
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ error: 'Unauthorized' });
+    });
 
     it('should return a package by ID', async () => {
         const response = await request(app)
@@ -52,6 +74,12 @@ describe('GET /package/{id}', () => {
         expect(response.body).toEqual(mockData[0]);
     });
 
+    it('should return 400 if unauthorized', async () => {
+        const response = await request(app).get('/package/1');
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ error: 'Unauthorized' });
+    });
+
     it('should return 404 if package not found', async () => {
         const response = await request(app)
             .get('/package/2')
@@ -59,12 +87,6 @@ describe('GET /package/{id}', () => {
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({ error: 'Package not found' });
-    });
-
-    it('should return 400 if unauthorized', async () => {
-        const response = await request(app).get('/package/1');
-        expect(response.status).toBe(400);
-        expect(response.body).toEqual({ error: 'Unauthorized' });
     });
 
     it('should log error if failed to fetch package data', async () => {
