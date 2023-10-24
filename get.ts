@@ -1,10 +1,10 @@
 import express, { Request, Response, Express } from 'express';
 import axios from 'axios';
 import { logger } from './analyze';  // assuming logger setup is in 'analyze.ts'
-import { Package, PackageMetadata, PackageData } from './schema';
+import { Package, PackageRating } from './schema';
 
 export async function getPackageServer(dataUrl: string, secretToken: string): Promise<Express> {
-    logger.info('Setting up GET /package/{id} endpoint');
+    logger.info('Setting up GET /package/ endpoint');
     const app = express();
     app.use(express.json());
   
@@ -30,14 +30,37 @@ export async function getPackageServer(dataUrl: string, secretToken: string): Pr
         }
         next();
     });
-  
-    // GET /package/{id}
-    app.get('/package/', (req: Request, res: Response) => {
-        logger.warn(`Package ID is missing`);
-        return res.status(400).json({ error: 'Unauthorized' });
+
+    // GET /package/byName/{name}
+    app.get('/package/byName/:name', async (req: Request, res: Response) => {
+        logger.info('Setting up GET /package/{name} endpoint');
+        logger.info(`Fetching package with Name ${req.params.name}`);
+        const packageName = req.params.name;
+
+        const response = await axios.get(`${dataUrl}/package/byName/${packageName}/history`, {
+            headers: {
+                'X-Authorization': secretToken
+            }
+        });
+
+        if (!response || response.data.length === 0) {
+            logger.warn(`Package ${packageName} not found`);
+            return res.status(404).json({ error: 'Package not found' });
+        }
+        
+        res.status(200).json(response.data.length === 1 ? response.data[0] : response.data);
+        
     });
     
-    app.get('/package/:id', (req: Request, res: Response) => {
+    app.get('/package/byName/', async (req: Request, res: Response) => {
+        logger.info('Inside /package/byName/ without name');
+        logger.warn('Package name is missing');
+        return res.status(400).json({ error: 'Package name is required' });
+    });
+  
+    // GET /package/{id}
+    app.get('/package/:id', async (req: Request, res: Response) => {
+        logger.info('Setting up GET /package/{id} endpoint');
         logger.info(`Fetching package with ID ${req.params.id}`);
 
         const packageId = req.params.id;
@@ -51,7 +74,13 @@ export async function getPackageServer(dataUrl: string, secretToken: string): Pr
         res.json(pkg);
     });
 
-    // // GET /package/{id}/rate
+    app.get('/package/', async (req: Request, res: Response) => {
+        logger.warn(`Package ID is missing`);
+        return res.status(400).json({ error: 'Unauthorized' });
+    });
+
+    // // DISCUSS WITH ARRYAN
+    // // GET /package/{id}/rate 
     // app.get('/package/:id/rate', (req: Request, res: Response) => {
     //     logger.info(`Fetching rating for package with ID ${req.params.id}`);
     
