@@ -7,6 +7,6 @@ module.exports = {
   collectCoverage: true,
   coverageReporters: ["json", "text", "lcov", "clover"],
   coverageDirectory: "coverage",
-  collectCoverageFrom: ["metric.ts", "new-metrics.ts", "analyze.ts"]
+  collectCoverageFrom: ["metric.ts", "new-metrics.ts", "analyze.ts", "get.ts"]
 
 };
