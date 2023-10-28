@@ -17,20 +17,17 @@ jobs:
         id-token: write
         contents: read
       steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: "Configure AWS Credentials" Action for GitHub Actions
         uses: aws-actions/configure-aws-credentials@v4.0.1        
         with:
           role-to-assume: {{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-2
-      # Step 2
         - name: Create CodeDeploy Deployment
           id: deploy
           run: |
             aws deploy create-deployment \
-              --application-name application-name \
-              --deployment-group-name AppDeploymentGroupName \
+              --application-name 461Phase2CD \
+              --deployment-group-name ec2-deploy \
               --deployment-config-name CodeDeployDefault.OneAtATime \
               --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
 #      - name: Checkout files
