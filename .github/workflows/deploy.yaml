@@ -20,10 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: "Configure AWS Credentials" Action for GitHub Actions
-          uses: aws-actions/configure-aws-credentials@v4.0.1        
-          with:
-            role-to-assume: {{ secrets.AWS_ROLE_ARN }}
-            aws-region: us-east-2
+        uses: aws-actions/configure-aws-credentials@v4.0.1        
+        with:
+          role-to-assume: {{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-2
       # Step 2
         - name: Create CodeDeploy Deployment
           id: deploy
