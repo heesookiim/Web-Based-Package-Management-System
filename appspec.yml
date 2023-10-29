@@ -7,9 +7,8 @@ files:
    destination: /home/ec2-user/461Project-Phase2
 hooks:
   AfterInstall:
-   - location: /home/ec2-user/461Project-Phase2/startup.sh
+   - location: /home/ec2-user/startup.sh
      timeout: 300000
-#     timeout: 300
      runas: root
 #  ApplicationStart:
 #   - location: scripts/start_server
