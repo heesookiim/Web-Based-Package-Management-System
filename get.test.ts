@@ -14,7 +14,6 @@ const mockData: Package[] = [
         ID: '1',
         Name: 'Test Package',
         Version: '1.0.0',
-        Description: 'This is a test package',
     },
     data: {
         Content: 'sampleContent',

@@ -1,30 +1,68 @@
 // schema.ts
 export interface PackageMetadata {
-    Description?: string; // OPTIONAL: Description of the package
-    Name: string;  // Name of a package.
-    Version: string;  // Package version. Example: "1.2.3"
-    ID: string;  // Internal identifier for interacting with existing packages.
+    Name: string;
+    Version: string;
+    ID: string;
   }
   
 export interface PackageData {
-  Description?: string; // OPTIONAL: Description of the package
-  Content?: string;  // Package contents (Encoded as text using a Base64 encoding). This is the zip file uploaded by the user.
-  URL?: string;  // Package URL (for use in public ingest).
-  JSProgram?: string;  // A JavaScript program (for use with sensitive modules).
+  Content?: string;
+  URL?: string;
+  JSProgram?: string;
 }
 
-export interface PackageRating {
-  BusFactor: number;
-  Correctness: number;
-  RampUp: number;
-  ResponsiveMaintainer: number;
-  LicenseScore: number;
-  GoodPinningPractice: number;
-  PullRequest: number;
-  NetScore: number;
-}
-  
 export interface Package {
   metadata: PackageMetadata;
   data: PackageData;
 }  
+
+export interface User {
+  name: string;
+  isAdmin: boolean;
+}
+
+export interface UserAuthenticationInfo {
+  password: string;
+}
+
+export type PackageID = string;
+
+export interface PackageRating {
+  BusFactor: number | -1;
+  Correctness: number | -1;
+  RampUp: number | -1;
+  ResponsiveMaintainer: number | -1;
+  LicenseScore: number | -1;
+  GoodPinningPractice: number | -1;
+  PullRequest: number | -1;
+  NetScore: number | -1;
+}
+
+export interface PackageHistoryEntry {
+  User: User;
+  Date: string;
+  PackageMetadata: PackageMetadata;
+  Action: string;
+}
+
+export type PackageName = string;
+
+export type AuthenticationToken = string;
+
+export interface AuthenticationRequest {
+  User: User;
+  Secret: UserAuthenticationInfo;
+}
+
+export type SemverRange = string;
+
+export interface PackageQuery {
+  Version: SemverRange;
+  Name: PackageName;
+}
+
+export type EnumerateOffset = string;
+
+export interface PackageRegEx {
+  RegEx: string;
+}
