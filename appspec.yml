@@ -1,0 +1,14 @@
+# adapted from https://medium.com/thelorry-product-tech-data/amazon-ec2-deployment-complete-ci-cd-pipeline-using-github-actions-and-aws-codedeploy-8a477123ff7e
+
+version: 0.0
+os: linux
+files:
+ - source: .
+   destination: /home/ec2-user/461Project-Phase2
+hooks:
+#  AfterInstall:
+   
+#  ApplicationStart:
+#   - location: startup.sh
+#     timeout: 300000
+#     runas: root
