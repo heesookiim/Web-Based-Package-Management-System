@@ -1,8 +1,8 @@
 // schema.ts
 export interface PackageMetadata {
-    Name: string;
+    Name: PackageName;
     Version: string;
-    ID: string;
+    ID: PackageID;
   }
   
 export interface PackageData {
