@@ -3,7 +3,9 @@
 name: deploy
 on:
   push: 
-      branches: [ main ]
+#      branches: [ main ]
+    branches:
+      - 17-static-web-hosting-on-s3-with-cd
 
 jobs:
   deploy:
@@ -11,7 +13,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/17-static-web-hosting-on-s3-with-cd'
     steps:
      # Step 1
       - name: Configure AWS credentials
