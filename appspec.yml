@@ -7,6 +7,5 @@ files:
    destination: /home/ec2-user/461Project-Phase2
 hooks:
   AfterInstall:
-    - location: scripts/completeSetup.sh
+    - location: scripts/deployWeb.sh
       timeout: 360
-      #runas: AWS_EC2_ROLE
