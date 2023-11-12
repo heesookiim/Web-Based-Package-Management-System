@@ -9,4 +9,4 @@ hooks:
   AfterInstall:
     - location: scripts/completeSetup.sh
       timeout: 360
-      runas: AWS_EC2_ROLE
+      #runas: AWS_EC2_ROLE
