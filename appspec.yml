@@ -6,9 +6,7 @@ files:
  - source: .
    destination: /home/ec2-user/461Project-Phase2
 hooks:
-#  AfterInstall:
-   
-#  ApplicationStart:
-#   - location: startup.sh
-#     timeout: 300000
-#     runas: root
+  AfterInstall:
+    - location: scripts/completeSetup.sh
+      timeout: 360
+      runas: AWS_EC2_ROLE
