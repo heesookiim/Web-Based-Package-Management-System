@@ -5,20 +5,42 @@ const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
-//    const { Name, Version, ID } = req.body.metadata as PackageMetadata;
-//    const rating = req.body.rating as PackageRating;
 
     // checks if only either Content or URL is being passsed when inserting a package
-    if (
-        !((Content && JSProgram && !URL) || (URL && JSProgram && !Content))
-    ) {
-        console.log(req.body);
-        
-        
+    if (!((Content && JSProgram && !URL) || (URL && JSProgram && !Content))) {
         return res.status(400).json({
             error: "There is missing field(s) in the PackageData or it is formed improperly."
         });
     }
+
+//    if (URL) {
+//        downloadPackage()
+//
+//
+//    } else {
+//
+//    }
+    // unzip
+    // read package.json and get name, version, and link
+    // call metrics for the code and store it in database
+    // re-zip into base64 to be stores into the database
+
+    // test cases
+    /**
+
+    1. unzip successful
+    2. unzip fails (error)
+    3. no package.json (error)
+    4. package.json has no version or link or name (error)
+    5. rezip successful
+    6. rezip fails (error)
+
+    // errors
+    7. database INSERT fails for metrics
+    8. database INSERT fails for zip file
+
+   **/
+
 //
 //    if (await checkPackageExistence(Content, URL)) {
 //        return res.status(409).json({
@@ -37,12 +59,12 @@ router.post('/', async (req: Request, res: Response) => {
     const connection = await connectToDatabase();
     let name = 'Underscore';
     let version = '1.0.0';
-    let id = 'underscore';
+    let id = 'underscore2';
     let responseData : schema.Package;
     if (Content) {
         
         try {
-            const [results] = await connection.execute(
+            const [results] = await connection.execute( 
                 'INSERT INTO packages (Name, Version, ID, Content, JSProgram) VALUES (?, ?, ?, ?, ?)'
                 , [name, version, id, Content, JSProgram]);
             await connection.end();
@@ -53,12 +75,28 @@ router.post('/', async (req: Request, res: Response) => {
             
         } catch (error) {
             return res.status(500).json({
-                error: "Failed to connect to the database. Please try again later."
+                error: "Failed to insert Content to database. Please try again later."
             });
         }
         
     } else if (URL) {
         
+        try {
+            const [results] = await connection.execute(
+                'INSERT INTO packages (Name, Version, ID, URL, JSProgram) VALUES (?, ?, ?, ?, ?)'
+                , [name, version, id, URL, JSProgram]);
+            await connection.end();
+            responseData = {
+                metadata: { Name:name, Version:version, ID:id },
+                data: { URL, JSProgram }
+            };
+
+        } catch (error) {
+            return res.status(500).json({
+                error: "Failed to insert URL to the database. Please try again later."
+            });
+        }
+
     } else {
         throw new Error('Package is missing Content/URL');
     }
