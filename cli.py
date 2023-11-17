@@ -1,3 +1,5 @@
+# change to not rely on this file, be able to run other scripts independently
+
 import argparse
 import subprocess
 import os
@@ -31,13 +33,15 @@ ts_node_bin_path = os.path.join('.', 'node_modules', '.bin', 'ts-node')
 
 if args.file and not args.command:
     if os.path.isfile(args.file):
-        subprocess.run([ts_node_bin_path, './analyze.ts', args.file], env=os.environ)
-
+        #subprocess.run([ts_node_bin_path, './analyze.ts', args.file], env=os.environ)
+        subprocess.run(['tsc', './analyze.ts'])
 
     else:
         exit(1)        
 elif args.command == 'install':
-    subprocess.run([ts_node_bin_path, './install.ts'])
+    print("here")
+    subprocess.run(['tsc', './install.ts'])
+    subprocess.run(['node', './install.js'])
 
 elif args.command == 'test':
     subprocess.run(['npm', 'test', '--silent'], env=os.environ)

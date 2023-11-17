@@ -4,11 +4,11 @@
 # : ${LOG_LEVEL:="default_log_level"}
 # : ${LOG_FILE:="default_log_file_path"}
 # Load the variables from .env
-if [ -f .env ]; then
-    set -a
-    . .env
-    set +a
-fi
+#if [ -f .env ]; then
+#    set -a
+#    . .env
+#    set +a
+#fi
 
 # # Explicitly set each variable
 # export GITHUB_TOKEN=$GITHUB_TOKEN
@@ -16,13 +16,29 @@ fi
 # export LOG_FILE=$LOG_FILE
 
 if [ -z "$LOG_FILE" ]; then
-    # echo "LOG_FILE environment variable is not set or is an empty string."
+    echo "LOG_FILE environment variable is not set or is an empty string."
     exit 1
 fi
 
 if [ -z "$GITHUB_TOKEN" ]; then
-    # echo "GITHUB_TOKEN environment variable is not set or is an empty string."
+    echo "GITHUB_TOKEN environment variable is not set or is an empty string."
     exit 1
 fi
 
-python3 cli.py $@
+# python cli doesn't work
+#python3 cli.py $@
+# basic implementation to be able to run scripts and tests
+if [ "$1" == "test" ]; then
+    npm test
+    exit 0
+fi
+
+if [ "$1" == "install" ]; then
+    npm install
+    exit 0
+fi
+
+if [ -f $1 ]; then
+    npx ts-node ./analyze.ts $1
+    exit 0
+fi

@@ -162,14 +162,14 @@ describe("GitHub Repository Metrics", () => {
     const content = "This is a test content!";
     fs.writeFileSync(filePath, content, "utf-8");
 
-    const readContent = await readFileContent(filePath);
+    const readContent = await fs.readFileSync(filePath);
     expect(readContent).toBe(content);
   });
 
   it("should throw an error when trying to read a non-existent file", async () => {
     const filePath = path.join(testDir, "nonExistentReadTest.txt");
 
-    await expect(readFileContent(filePath)).rejects.toThrowError("File not found");
+    await expect(fs.readFileSync(filePath)).rejects.toThrowError("File not found");
   });
 
 

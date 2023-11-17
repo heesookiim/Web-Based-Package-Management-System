@@ -1,34 +1,10 @@
-import fs from 'fs';
+import * as fs from 'fs';
 import axios from 'axios';
 import { argv, exit } from "process";
-import winston from 'winston';
-
-const logLevels = ['error', 'info', 'debug'];
-const logLevel = logLevels[Number(process.env.LOG_LEVEL) || 0];
-const logFile = process.env.LOG_FILE;
-
-if (!logLevel) {
-    
-    process.exit(1);
-}
-
-if (!logFile || !logFile.trim()) {
-    
-    process.exit(1);
-} else if (!fs.existsSync(logFile)) {
-    fs.writeFileSync(logFile, '');
-}
-export const logger = winston.createLogger({
-    level: logLevel,
-    format: winston.format.simple(),
-    transports: [
-        new winston.transports.File({ filename: logFile })
-    ]
-});
-
-
-
 import { busFactor, correctness, license, rampUp, responsiveMaintainer } from './metric';
+import { logger } from './logger_cfg';
+
+
 
 function checkForInvalidNumber(value: number | null): number {
     if (value === null || isNaN(value)) {
@@ -36,7 +12,6 @@ function checkForInvalidNumber(value: number | null): number {
     }
     return value;
 }
-
 
 export async function analyzeDependencies(URL_FILE: string) {
 
@@ -185,11 +160,12 @@ async function fetchNpmDataWithAxios(packageName: string) {
     }
 }
 
-if (require.main === module) {
-    (async () => {
-        if (argv.length >= 3) {
-            const file = argv[2];
-            await analyzeDependencies(file);
-        }
-    })();
-}
+//if (require.main === module) {
+(async () => {
+    if (argv.length >= 3) {
+        const file = argv[2];
+        console.log('Analyzing file:', file);
+        await analyzeDependencies(file);
+    }
+})();
+//}

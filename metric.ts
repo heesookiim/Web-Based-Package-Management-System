@@ -1,21 +1,12 @@
 import axios from 'axios';
-import path from 'path';
-import winston from 'winston';
+import * as path from 'path';
+import { logger } from './logger_cfg';
 const { clone } = require('isomorphic-git');
 const fs = require('fs');
 const http = require('isomorphic-git/http/node');
 const tmp = require('tmp');
-const logLevels = ['error', 'info', 'debug'];
-const logLevel = logLevels[Number(process.env.LOG_LEVEL) || 0];
 const logFile = process.env.LOG_FILE;
 const token = process.env.GITHUB_TOKEN;
-const logger = winston.createLogger({
-    level: logLevel,
-    format: winston.format.simple(),
-    transports: [
-        new winston.transports.File({ filename: logFile })
-    ]
-});
 
 if (!token || !token.trim()) {
   logger.error('GITHUB_TOKEN environment variable is not set or is an empty string.');

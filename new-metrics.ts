@@ -1,6 +1,5 @@
 const axios = require('axios');
-const winston = require('winston');
-import { logger } from "./analyze";
+import { logger } from "./logger_cfg";
 const personalAccessToken = process.env.GITHUB_TOKEN; // personalAccessToken stored locally
 
 let count_constraint = 0; // count of how many dependencies are constraint to a particular version

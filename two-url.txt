@@ -1,1 +1,2 @@
+https://github.com/appfeel/jsobjects
 https://github.com/cloudinary/cloudinary_npm
