@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "server": "tsc && nodemon server.js",
-    "API": "tsc packageRouter.ts && node server.js"
+    "API": "tsc rest_api/*.ts && node rest_api/app.js"
   },
   "repository": {
     "type": "git",

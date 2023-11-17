@@ -12,3 +12,5 @@ coverage
 nullivex_nodist
 lodash_lodash
 cloudinary_cloudinary_npm
+rest_api/*.js
+rest_api/routes/*.js

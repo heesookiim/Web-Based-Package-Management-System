@@ -1,11 +1,16 @@
+
 import { Router, Request, Response } from 'express';
-import * as schema from './schema';
-import { connectToDatabase } from "./db";
+import { exec } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as schema from '../schema';
+import { connectToDatabase } from "../db";
+
 const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
-
+    
     // checks if only either Content or URL is being passsed when inserting a package
     if (!((Content && JSProgram && !URL) || (URL && JSProgram && !Content))) {
         return res.status(400).json({
@@ -13,14 +18,11 @@ router.post('/', async (req: Request, res: Response) => {
         });
     }
 
-//    if (URL) {
-//        downloadPackage()
-//
-//
-//    } else {
-//
-//    }
-    // unzip
+    if (URL) {
+        downloadRepo(URL);
+    } else {
+        
+    }
     // read package.json and get name, version, and link
     // call metrics for the code and store it in database
     // re-zip into base64 to be stores into the database
@@ -57,9 +59,9 @@ router.post('/', async (req: Request, res: Response) => {
     
     // connecting to the mysql database
     const connection = await connectToDatabase();
-    let name = 'Underscore';
+    let name = 'overscore3';
     let version = '1.0.0';
-    let id = 'underscore2';
+    let id = 'overscore3';
     let responseData : schema.Package;
     if (Content) {
         
@@ -80,7 +82,7 @@ router.post('/', async (req: Request, res: Response) => {
         }
         
     } else if (URL) {
-        
+        console.log('entered');
         try {
             const [results] = await connection.execute(
                 'INSERT INTO packages (Name, Version, ID, URL, JSProgram) VALUES (?, ?, ?, ?, ?)'
@@ -136,19 +138,50 @@ router.post('/', async (req: Request, res: Response) => {
 //    }
 //}
 
+function downloadRepo(url: string): string {
+    
+    let destinationFolder = './extracted_contents';
+    const gitCloneCommand = `git clone ${url} ${destinationFolder}`;
 
+    // Run the git clone command
+    exec(gitCloneCommand, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`Repository cloned successfully: ${stdout}`);
+    });
+
+
+    // Read the package.json file
+    const packageJsonPath = path.join(destinationFolder, 'package.json');
+    const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf-8');
+    
+    try {
+        
+        // Define the regular expression pattern to match GitHub URLs
+//        const githubUrlPattern = /"repository"\s*:\s*{\s*"type"\s*:\s*"git",\s*"url"\s*:\s*"(git\+https:\/\/github\.com\/|https:\/\/github\.com\/|git:\/\/github\.com\/)([^"]+\.git)"/;
+//        const match = packageJsonContent.match(githubUrlPattern);
+
+//        // If a match is found, return the GitHub URL
+//        if (match && match[2]) {
+//            const githubUrl = match[2];
+//            // Modify the GitHub URL to the desired format
+//            const formattedUrl = githubUrl.replace(/\.git$/, '');            // If no match is found, return null
+//            console.log(formattedUrl);
 //
-//app.get('/packages', async (req, res) => {
-//    try {
-//        const connection = await connectToDatabase();
-//        const [rows] = await connection.execute('SELECT * FROM packages');
-//        connection.end();
-//        res.status(200).json(rows);
-//    } catch (error) {
-//        res.status(500).json({ error: 'Internal Server Error' });
-//    }
-//});
-//
+//        }
+
+    } catch (error) {
+        console.error('Error:', error.message || error);
+    }
+
+
+}
 
 
 export default router;
