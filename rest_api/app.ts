@@ -1,8 +1,8 @@
 // app.ts
 import * as dotenv from 'dotenv';
 import * as express from 'express';
-// import packageRouter from './routes/packageRouter';
-import packagesRouter from './routes/packagesRouter';
+// import packageRouter from './routes/post_package';
+import packagesRouter from './routes/post_packages';
 import * as path from 'path';
 
 // Load environment variables from .env file
