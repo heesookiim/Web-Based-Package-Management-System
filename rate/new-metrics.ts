@@ -1,5 +1,5 @@
 const axios = require('axios');
-import { logger } from "./logger_cfg";
+import { logger } from "../logger_cfg";
 const personalAccessToken = process.env.GITHUB_TOKEN; // personalAccessToken stored locally
 
 let count_constraint = 0; // count of how many dependencies are constraint to a particular version
@@ -120,7 +120,7 @@ export async function analyzePullRequests(gitHubLink: string) {
     const parts = gitHubLink.split('/');
     if (parts.length < 5 || parts[2] !== 'github.com') {
         logger.error(`Wrong format for ${gitHubLink} and/or broken link`);
-        return;
+        return 0;
     }
 
     let owner = parts[3]; // owner name

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as path from 'path';
-import { logger } from './logger_cfg';
+import { logger } from '../logger_cfg';
 const { clone } = require('isomorphic-git');
 const fs = require('fs');
 const http = require('isomorphic-git/http/node');
@@ -60,61 +60,126 @@ export async function busFactor(repositoryUrl: string) {
     }
   } catch (error: any) {
     logger.error('Error:', error.message);
-    return -1;
+    return 0;
   }
 }
 
 export async function license(repositoryUrl: string) {
-  try {
+  // function to check if the license is compatible
+  function isLicenseCompatible(license: string) {
+    // lists of compatible licenses
+    const licenseShortcuts: string[] = ['gnugpl', 'gnugplv3', 'gplv2', 'gplv2', 'lgplv2.1', 'agpl', 'agplv3.0', 'gnuallpermissive', 'apache2', 'artisticlicense2',
+      'clarifiedartistic', 'berkeleydb', 'boost', 'modifiedbsd', 'cecill', 'clearbsd', 'cryptixgenerallicense', 'ecos2.0', 'ecl2.0', 'eiffel', 'eudatagrid',
+      'expat', 'freebsd', 'freetype', 'hpnd', 'imatix', 'imlib', 'ijg', 'informal', 'intel', 'isc', 'mpl-2.0', 'ncsa', 'newopenldap', 'perllicense',
+      'publicdomain', 'python', 'python1.6a2', 'ruby', 'sgifreeb', 'standardmlofnj', 'unicode', 'upl', 'unlicense', 'vim', 'w3c', 'webm', 'wtfpl', 'wx',
+      'wxwind', 'x11license', 'xfree861.1license', 'zlib', 'zope2.0', 'mit',
+    ];
+    const licenseNames: string[] = [
+      'gnu general public license version 3', 'gnu general public license version 3', 'gnu general public license version 2', 'gnu general public license version 2',
+      'gnu lesser general public license version 2.1', 'gnu affero general public license version 3', 'gnu all-permissive license', 'apache license, version 2.0',
+      'artistic license 2.0', 'clarified artistic license', 'berkeley database license', 'sleepycat software product license', 'boost software license',
+      'modified bsd license', 'cecill version 2', 'the clear bsd license', 'cryptix general license', 'ecos license version 2.0', 'educational community license 2.0',
+      'eiffel forum license, version 2', 'eu datagrid software license', 'expat license', 'freebsd license', 'freetype project license',
+      'historical permission notice and disclaimer', 'license of the imatix standard function library', 'license of imlib2', 'independent jpeg group license',
+      'informal license', 'intel open source license', 'isc license', 'mozilla public license version 2.0', 'ncsa/university of illinois open source license',
+      'openldap license, version 2.7', 'license of perl 5 and below', 'public domain', 'license of python 2.0.1, 2.1.1, and newer versions',
+      'license of python 1.6a2 and earlier versions', 'license of ruby', 'sgi free software license b, version 2.0', 'standard ml of new jersey copyright license',
+      'unicode, inc. license agreement for data files and software', 'universal permissive license', 'the unlicense', 'license of vim, version 6.1 or later',
+      'w3c software notice and license', 'license of webm', 'wtfpl, version 2', 'wxwidgets library license', 'wxwindows library license', 'x11 license',
+      'xfree86 1.1 license', 'license of zlib', 'zope public license, versions 2.0 and 2.1', 'mit license',
+    ];    
+    
+    // check if license is in list
+    const lowercaseLicense = license.toLowerCase();
+    logger.debug('License: ' + lowercaseLicense)
 
-    const licenseUrl = `${repositoryUrl}/license`;
-    const LicenseResponse = await axios.get(licenseUrl, { headers });
-    const [, , , user, repo] = repositoryUrl.split('/');
-    const dirName = `${user}_${repo}`;
-    if (!fs.existsSync(dirName)) {
-      fs.mkdirSync(dirName);
+    // Check if the lowercase input contains any license shortcut
+    if (licenseShortcuts.some((shortcut) => lowercaseLicense.includes(shortcut))) {
+      logger.info('License matches');
+      return 1;
     }
 
-    const licenseFilename = path.join(dirName, 'licenseData.json');
-    const sanitizedResponse = {
-      data: LicenseResponse.data,
-      status: LicenseResponse.status
-    };
-
-    fs.writeFileSync(licenseFilename, JSON.stringify(sanitizedResponse, null, 2));
-    if (LicenseResponse.data && LicenseResponse.data.license) {
+    // Check if the lowercase input contains any license name
+    if (licenseNames.some((name) => lowercaseLicense.includes(name))) {
+      logger.info('License matches');
       return 1;
-    } else {
+    }
+    
+    return 0;
+  }
+
+  // checks license for a repository through license url (from recieved phase 1)
+  async function licenseURL(repositoryUrl: string) {
+    try {
+      const licenseUrl = `${repositoryUrl}/license`;
+      const LicenseResponse = await axios.get(licenseUrl, { headers });
+      const [, , , user, repo] = repositoryUrl.split('/');
+      const dirName = `${user}_${repo}`;
+      if (!fs.existsSync(dirName)) {
+        fs.mkdirSync(dirName);
+      }
+
+      const licenseFilename = path.join(dirName, 'licenseData.json');
+      const sanitizedResponse = {
+        data: LicenseResponse.data,
+        status: LicenseResponse.status
+      };
+
+      fs.writeFileSync(licenseFilename, JSON.stringify(sanitizedResponse, null, 2));
+      if (LicenseResponse.data && LicenseResponse.data.license) { // license was found
+        // check for license compatibility
+        const license = LicenseResponse.data.license.spdx_id;
+        return isLicenseCompatible(license);
+      }
+    } catch (error: any) {
       return 0;
     }
-
-  } catch (error: any) {
-    if (error.response) {
-      if (error.response.status === 404) {
-        const [, , , user, repo] = repositoryUrl.split('/');
-        const dirName = `${user}_${repo}`;
-        if (!fs.existsSync(dirName)) {
-          fs.mkdirSync(dirName);
-        }
-        const licenseFilename = path.join(dirName, 'licenseData.json');
-        const sanitizedResponse = {
-          data: error.response.data,
-          status: error.response.status
-        };
-        fs.writeFileSync(licenseFilename, JSON.stringify(sanitizedResponse, null, 2));
-        return 0;
-      } else {
-        logger.error(`Unexpected response status: ${error.response.status}`);
-        return -1;
-      }
-    } else {
-      logger.error('Error:', error.message);
-      return -1;
-    }
-
   }
-}
 
+  // check based on readme
+  async function licenseREADME(repositoryUrl: string) {
+    try {
+      // get readme
+      const readmeUrl = `${repositoryUrl}/readme`;
+      const readmeResponse = await axios.get(readmeUrl, { headers });
+      const [, , , user, repo] = repositoryUrl.split('/');
+      const dirName = `${user}_${repo}`;
+      if (!fs.existsSync(dirName)) {
+        fs.mkdirSync(dirName);
+      }
+      logger.info('Successfully got readme')
+      const readmeFilename = path.join(dirName, 'readmeData.json');
+      const sanitizedResponse = {
+        data: readmeResponse.data,
+        status: readmeResponse.status
+      };
+      fs.writeFileSync(readmeFilename, JSON.stringify(sanitizedResponse, null, 2));
+      if (readmeResponse.data && readmeResponse.data.content) {
+        //logger.debug('Readme conent: ' + readmeResponse.data.content)
+        const content = Buffer.from(readmeResponse.data.content, 'base64').toString('utf8');
+
+        // check for valid license within readme content
+        return isLicenseCompatible(content);
+      }
+      return 0;
+    } catch (error: any) {
+      logger.error('Error fetching README: ' + error);
+      return 0;
+    }
+  }
+
+  const licenseScoreURL = await licenseURL(repositoryUrl);
+  if(licenseScoreURL === 1) {  // check based on license url
+    return 1;
+  }
+  
+  // check based on README
+  const licenseScoreREDAME = await licenseREADME(repositoryUrl);
+  if(licenseScoreREDAME === 1) {
+    return 1;
+  } 
+  return 0;
+}
 
 export async function correctness(repositoryUrl: string) {
   const repositoryResponse = await axios.get(repositoryUrl, { headers });
@@ -152,6 +217,11 @@ export async function correctness(repositoryUrl: string) {
         const nextPage = page + 1;
         return await fetchAllIssues(nextPage);
       } else {
+        // check for 0/0
+        if (totalIssues === 0) {
+          logger.info('Correctness: 0');
+          return 0;
+        }
         const bugPercentage = (totalClosedIssues / totalIssues);
         logger.info(`Correctness: ${bugPercentage.toFixed(5)}`);
         return bugPercentage;
@@ -213,8 +283,6 @@ export async function responsiveMaintainer(repositoryUrl: string) {
   async function fetchAllIssues(page: number = 1): Promise<number> {
     try {
       const response = await axios.get(issuesUrl, { params: { ...params, page }, headers });
-
-
       const issues = response.data;
 
       await Promise.all(issues.slice(0, 10).map(fetchCommentsForIssue));
@@ -224,9 +292,14 @@ export async function responsiveMaintainer(repositoryUrl: string) {
         const nextPage = page + 1;
         return await fetchAllIssues(nextPage);
       } else {
+        // divide by 0 check
+        if (totalIssues === 0) {
+          logger.info('ResponsiveMaintainer: 0');
+          return 0;
+        }
         const averageResponseTime = totalResponseTime / totalIssues / 100;
         logger.info(`ResponsiveMaintainer: ${averageResponseTime}`);
-        if(averageResponseTime > 10) {
+        if(averageResponseTime >= 10) {
           return 0;
         }
         else {
@@ -280,49 +353,40 @@ export async function getDirectorySize(directory: string, excludeFile?: string):
   return size;
 }
 
-export async function cloneRepository(repositoryUrl: string): Promise<string> {
+export async function cloneRepository(repositoryUrl: string, tempDir: any): Promise<string> {
   try {
-    const tempDir = tmp.dirSync({ unsafeCleanup: true, prefix: 'temp-' });
+    //const tempDir = tmp.dirSync({ unsafeCleanup: true, prefix: 'temp-' });
     const localDir = tempDir.name;
     const userAgent = 'UAgent';
     const newURL = repositoryUrl.replace('api.github.com/repos', 'github.com');
     logger.info("Awaiting clone");
-
-    await Promise.race([
-      clone({
-        fs,
-        http,
-        url: newURL,
-        dir: localDir,
-        onAuth: () => ({ token }),
-        headers: {
-          'User-Agent': userAgent,
-        },
-      }),
-      timeoutPromise(10000)
-    ]);
+    await clone({
+      fs,
+      http,
+      url: newURL,
+      dir: localDir,
+      onAuth: () => ({ token }),
+      headers: {
+        'User-Agent': userAgent,
+      },
+    });
     logger.info("Cloned Repo");
     return localDir;
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error('Error cloning repository:', error.message);
-    } else {
-      logger.error('Error cloning repository:', error);
-
-    }
+    logger.error('Error cloning repository: ' + error);
     return '';
   }
 }
 
-
-
 export async function rampUp(repositoryUrl: string): Promise<number> {
   try {
+    // clone repository
     const tempDir = tmp.dirSync({ unsafeCleanup: true, prefix: 'temp-' });
-    const localDir = await cloneRepository(repositoryUrl);
+    const localDir = await cloneRepository(repositoryUrl, tempDir);
 
     if (!localDir) {
-      throw new Error('Failed to clone repository');
+      logger.error('cloned repository does not exist');
+      return 0;
     }
 
     const readmePaths = [
@@ -331,29 +395,48 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
       path.join(localDir, 'README.MD')
     ];
 
-    let readmeSize = 0;
-    for (const readmePath of readmePaths) {
-      try {
-        logger.debug("Getting file size: ", readmePath);
-        readmeSize = await getFileSize(readmePath);
-        break;
-      } catch (err) {
-        logger.error('Error getting README file size:', err);
-      }
+    // check which readmePath exists
+    let readmePath = '';
+    if(fs.existsSync(readmePaths[0])) {
+      readmePath = readmePaths[0];
+    } else if(fs.existsSync(readmePaths[1])) {
+      readmePath = readmePaths[1];
+    } else if(fs.existsSync(readmePaths[2])) {
+      readmePath = readmePaths[2];
+    } else {
+      logger.error('No README file found');
+      return 0;
     }
 
-    const codebaseSize = await getDirectorySize(localDir, readmePaths.find(p => fs.existsSync(p)));
-    var ratio = Math.log(readmeSize + 1) / Math.log(codebaseSize + 1);
+    // use readme to calculate rampUp score
+    let readmeSize = 0;
+    try {
+      logger.debug("Getting file size: ", readmePath);
+      readmeSize = await getFileSize(readmePath);
+    } catch (err) {
+      logger.error('Error getting README file size:', err);
+    }
 
+    const codebaseSize = await getDirectorySize(localDir, readmePath);
+    var ratio = Math.log(readmeSize + 1) / Math.log(codebaseSize + 1);
+    logger.debug('Readme vs codebase ratio: ' + ratio);
+
+    // remove temp directory
     tempDir.removeCallback();
 
-    return parseFloat(ratio.toFixed(1));
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error('Error analyzing repository:', error.message);
-    } else {
-      logger.error('Error analyzing repository:', error);
+    // finalize score
+    ratio = parseFloat(ratio.toFixed(1));
+    logger.info('RampUp raw score: ' + ratio);
+    if(ratio > 1) {
+      logger.info('Rampup score: 1');
+      return 1;
     }
-    return -1;
+    else {
+      logger.info('Rampup score: ' + ratio);
+      return ratio;
+    }
+  } catch (error) {
+    logger.error('Error analyzing repository:', error);
+    return 0;
   }
 }

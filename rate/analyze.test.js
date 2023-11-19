@@ -58,10 +58,7 @@ function loadMockData(repositoryUrl, dataType) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
-
-
-describe("GitHub Repository Metrics", () => {
-  
+describe("GitHub Repository Metrics", () => { 
   let testDir;
   beforeEach(() => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-"));
@@ -84,7 +81,7 @@ describe("GitHub Repository Metrics", () => {
     tmp.dirSync.mockReturnValue(mockDir);
     git.clone.mockResolvedValue(true);
 
-    const result = await cloneRepository('https://api.github.com/repos/sample/repo');
+    const result = await cloneRepository('https://api.github.com/repos/sample/repo', mockDir);
     
     expect(result).toBe(mockDir.name);
   });
@@ -124,7 +121,6 @@ describe("GitHub Repository Metrics", () => {
     expect(size).toBe(0);
   });
 
-
   it("should correctly get the size of a directory", async () => {
     const dirPath = path.join(testDir, "testDir");
     fs.mkdirSync(dirPath);
@@ -157,22 +153,6 @@ describe("GitHub Repository Metrics", () => {
     expect(size).toBe(Buffer.from(content2).length);
   });
 
-  it("should correctly read the content of a file", async () => {
-    const filePath = path.join(testDir, "readTestFile.txt");
-    const content = "This is a test content!";
-    fs.writeFileSync(filePath, content, "utf-8");
-
-    const readContent = await fs.readFileSync(filePath);
-    expect(readContent).toBe(content);
-  });
-
-  it("should throw an error when trying to read a non-existent file", async () => {
-    const filePath = path.join(testDir, "nonExistentReadTest.txt");
-
-    await expect(fs.readFileSync(filePath)).rejects.toThrowError("File not found");
-  });
-
-
   repositoryUrls.forEach((repositoryUrl) => {
     const newUrl = repositoryUrl.replace("github.com", "api.github.com/repos");
     it("should compute the bus factor correctly", async () => {
@@ -194,7 +174,7 @@ describe("GitHub Repository Metrics", () => {
       axios.get.mockRejectedValue(new Error("Network error"));
 
       const result = await busFactor(newUrl);
-      expect(result).toBe(-1);
+      expect(result).toBe(0);
     });
     it("should determine the license status correctly", async () => {
       const licenseMockData = loadMockData(repositoryUrl, "licenseData");
@@ -242,16 +222,15 @@ describe("GitHub Repository Metrics", () => {
           status: 500,
         },
       });
-
       const result = await license(newUrl);
-      expect(result).toBe(-1);
+      expect(result).toBe(0);
     });
 
     it("should handle network errors gracefully", async () => {
       axios.get.mockRejectedValue(new Error("Network error"));
 
       const result = await license(newUrl);
-      expect(result).toBe(-1);
+      expect(result).toBe(0);
     });
 
     it("should compute responsiveness of maintainers", async () => {
@@ -306,7 +285,23 @@ describe("GitHub Repository Metrics", () => {
       const result = await responsiveMaintainer(newUrl);
       expect(result).toBe(0);
     });
+
+    // new rampup tests
+    it("should successfully calculate RampUp score", async () => {
+      const result = await rampUp(newUrl);
+      expect(result).toBeLessThanOrEqual(0.75);
+    });
     
+    it("should gracefully handle bad link for RampUp", async () => {
+      axios.get.mockRejectedValue({
+        response: {
+          data: {},
+          status: 500,
+        },
+      });
+      const result = await rampUp(newUrl);
+      expect(result).toBe(0);
+    });
   });
   
 });

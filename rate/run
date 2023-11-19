@@ -15,15 +15,15 @@
 # export LOG_LEVEL=$LOG_LEVEL
 # export LOG_FILE=$LOG_FILE
 
-if [ -z "$LOG_FILE" ]; then
-    echo "LOG_FILE environment variable is not set or is an empty string."
-    exit 1
-fi
+#if [ -z "$LOG_FILE" ]; then
+#    echo "LOG_FILE environment variable is not set or is an empty string."
+#    exit 1
+#fi
 
-if [ -z "$GITHUB_TOKEN" ]; then
-    echo "GITHUB_TOKEN environment variable is not set or is an empty string."
-    exit 1
-fi
+#if [ -z "$GITHUB_TOKEN" ]; then
+#    echo "GITHUB_TOKEN environment variable is not set or is an empty string."
+#    exit 1
+#fi
 
 # python cli doesn't work
 #python3 cli.py $@
@@ -41,4 +41,12 @@ fi
 if [ -f $1 ]; then
     npx ts-node ./analyze.ts $1
     exit 0
+fi
+
+if [ -d $1 ]; then
+    npx ts-node ./analyze.ts $1
+    exit 0
+elif [ -n "$1" ]; then
+    npx ts-node ./analyze.ts $1
+    exit 1
 fi
