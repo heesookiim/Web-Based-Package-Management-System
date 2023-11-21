@@ -46,7 +46,7 @@ function getMockDataPath(repositoryUrl: string, dataType: string): string {
   const parts = repositoryUrl.split("/");
   const user = parts[parts.length - 2];
   const dirName = `repos_${user}`;
-  return `${dirName}/${dataType}.json`;
+  return `rate/${dirName}/${dataType}.json`;
 }
 
 function getNumberOfMockPages(starts = "issuesData_page", repositoryUrl: string): number {
