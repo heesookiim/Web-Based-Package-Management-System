@@ -46,6 +46,10 @@ function getMockDataPath(repositoryUrl: string, dataType: string): string {
   const parts = repositoryUrl.split("/");
   const user = parts[parts.length - 2];
   const dirName = `repos_${user}`;
+  // to be used for local testing
+  // return `${dirName}/${dataType}.json`;
+
+  // to be used for testing in Github Actions
   return `rate/${dirName}/${dataType}.json`;
 }
 
