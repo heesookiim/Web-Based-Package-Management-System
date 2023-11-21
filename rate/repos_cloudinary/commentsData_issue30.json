@@ -1,0 +1,46 @@
+[
+  {
+    "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/56337127",
+    "html_url": "https://github.com/cloudinary/cloudinary_npm/issues/30#issuecomment-56337127",
+    "issue_url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/30",
+    "id": 56337127,
+    "node_id": "MDEyOklzc3VlQ29tbWVudDU2MzM3MTI3",
+    "user": {
+      "login": "taragano",
+      "id": 4972147,
+      "node_id": "MDQ6VXNlcjQ5NzIxNDc=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4972147?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/taragano",
+      "html_url": "https://github.com/taragano",
+      "followers_url": "https://api.github.com/users/taragano/followers",
+      "following_url": "https://api.github.com/users/taragano/following{/other_user}",
+      "gists_url": "https://api.github.com/users/taragano/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/taragano/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/taragano/subscriptions",
+      "organizations_url": "https://api.github.com/users/taragano/orgs",
+      "repos_url": "https://api.github.com/users/taragano/repos",
+      "events_url": "https://api.github.com/users/taragano/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/taragano/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "created_at": "2014-09-22T07:22:17Z",
+    "updated_at": "2014-09-22T07:22:26Z",
+    "author_association": "COLLABORATOR",
+    "body": "While you can use the `https://usename:password@...` URL syntax, you can also specify the 'Authorization' header by using the `headers` upload parameter for performing upload of a remote URL.\nHere's a reference:\nhttps://github.com/cloudinary/cloudinary_npm/blob/master/test/uploader.coffee#L67\n",
+    "reactions": {
+      "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/56337127/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "performed_via_github_app": null
+  }
+]

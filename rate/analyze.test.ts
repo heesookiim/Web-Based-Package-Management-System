@@ -171,11 +171,11 @@ it("should reject after given milliseconds", async () => {
       expect(result).toBe(0);
     });
     it("should determine the license status correctly", async () => {
-      const licenseMockData = loadMockData(repositoryUrl, "licenseData");
+      /*const licenseMockData = loadMockData(repositoryUrl, "licenseData");
       (axios.get as jest.Mock).mockResolvedValueOnce({
         data: licenseMockData.data,
         status: licenseMockData.status,
-      });
+      });*/
 
       const result = await license(newUrl);
       expect(result).toBeLessThanOrEqual(1);
@@ -248,7 +248,7 @@ it("should reject after given milliseconds", async () => {
             (axios.get as jest.Mock).mockResolvedValueOnce({ data: commentsMockData });
         });
     }
-
+    
       const result = await responsiveMaintainer(newUrl);
       expect(result).toBeLessThanOrEqual(1);
     });

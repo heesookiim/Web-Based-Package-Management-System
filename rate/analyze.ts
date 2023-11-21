@@ -164,7 +164,7 @@ export async function getAllRatings(repoUrl: string) {
     return rating;
 }
 
-/* 
+/*
 // used for running from bash script for local testing
 (async () => {
     if (argv.length >= 3) {
@@ -182,5 +182,4 @@ export async function getAllRatings(repoUrl: string) {
     //    const url = argv[2];
     //    let scores = await getAllRatings(url);
     //    console.log(JSON.stringify(scores));
-    }
 })();*/
