@@ -107,7 +107,7 @@
     "skipLibCheck": true,                                /* Skip type checking all .d.ts files. */
   
 
-    "allowJs": true
+    //"allowJs": true
       // ... other options
     
     

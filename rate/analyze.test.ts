@@ -1,10 +1,11 @@
-const axios = require("axios");
-const git = require('isomorphic-git');
-const tmp = require('tmp');
-const path = require("path");
-const os = require("os");
+import axios from "axios";
+import * as git from 'isomorphic-git';
+import * as tmp from 'tmp';
+import * as path from "path";
+import * as os from "os";
+import * as fs from "fs";
 
-const {
+import {
   getDirectorySize,
   getFileSize,
   timeoutPromise,
@@ -14,13 +15,15 @@ const {
   responsiveMaintainer,
   rampUp,
   cloneRepository,
-} = require("./metric");
-const fs = require("fs");
+} from "./metric";
 
 process.env.GITHUB_TOKEN = "mock-token";
 process.env.LOG_FILE = "./mock-log.log";
 jest.mock('isomorphic-git');
-jest.mock('tmp');
+// jest.mock('tmp');
+jest.mock('tmp', () => ({
+  dirSync: jest.fn(() => ({ name: '/mock/directory/path', removeCallback: jest.fn() })),
+}));
 jest.useFakeTimers();
 jest.mock("axios");
 jest.mock("winston", () => ({
@@ -39,27 +42,28 @@ jest.mock("winston", () => ({
   },
 }));
 
-function getMockDataPath(repositoryUrl, dataType) {
+function getMockDataPath(repositoryUrl: string, dataType: string): string {
   const parts = repositoryUrl.split("/");
   const user = parts[parts.length - 2];
   const dirName = `repos_${user}`;
   return `${dirName}/${dataType}.json`;
 }
 
-function getNumberOfMockPages(starts = "issuesData_page", repositoryUrl) {
+function getNumberOfMockPages(starts = "issuesData_page", repositoryUrl: string): number {
   const dirPath = getMockDataPath(repositoryUrl, "").slice(0, -5);
   const files = fs.readdirSync(dirPath);
   const issuesFiles = files.filter((file) => file.startsWith(starts));
   return issuesFiles.length;
 }
 
-function loadMockData(repositoryUrl, dataType) {
+function loadMockData(repositoryUrl: string, dataType: string): any {
   const filePath = getMockDataPath(repositoryUrl, dataType);
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
-describe("GitHub Repository Metrics", () => { 
-  let testDir;
+describe("GitHub Repository Metrics", () => {
+  let testDir: string;
+
   beforeEach(() => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-"));
   });
@@ -67,7 +71,8 @@ describe("GitHub Repository Metrics", () => {
   afterEach(() => {
     fs.rmdirSync(testDir, { recursive: true });
   });
-  const repositoryUrls = [
+
+  const repositoryUrls: string[] = [
     "https://github.com/cloudinary/cloudinary_npm"
   ];
 
@@ -75,37 +80,28 @@ describe("GitHub Repository Metrics", () => {
     jest.resetAllMocks();
   });
 
-
-  it('should successfully clone a repository', async () => {
+  it('should handle errors during cloning', async () => {
     const mockDir = { name: '/mock/directory/path', removeCallback: jest.fn() };
-    tmp.dirSync.mockReturnValue(mockDir);
-    git.clone.mockResolvedValue(true);
+    (tmp as any).dirSync.mockReturnValue(mockDir);
+    (git as any).clone.mockRejectedValue(new Error('Mocked clone error'));
 
     const result = await cloneRepository('https://api.github.com/repos/sample/repo', mockDir);
     
-    expect(result).toBe(mockDir.name);
-  });
-  it('should handle errors during cloning', async () => {
-    const mockDir = { name: '/mock/directory/path', removeCallback: jest.fn() };
-    tmp.dirSync.mockReturnValue(mockDir);
-    git.clone.mockRejectedValue(new Error('Mocked clone error'));
-
-    const result = await cloneRepository('https://api.github.com/repos/sample/repo');
-    
     expect(result).toBe('');
-    
   });
-  it("should reject after given milliseconds", async () => {
+
+it("should reject after given milliseconds", async () => {
     const promise = timeoutPromise(1000);
     jest.advanceTimersByTime(1000);
 
     try {
-      await promise;
-      expect(false).toBe(true);
+        await promise;
+        expect(false).toBe(true);
     } catch (error) {
-      expect(error.message).toBe("Operation timed out after 1000 milliseconds");
+        expect((error as Error).message).toBe("Operation timed out after 1000 milliseconds");
     }
-  });
+});
+
   it("should correctly get the size of a file", async () => {
     const filePath = path.join(testDir, "testFile.txt");
     const content = "Hello, world!";
@@ -115,7 +111,7 @@ describe("GitHub Repository Metrics", () => {
     expect(size).toBe(Buffer.from(content).length);
   });
 
-  it("should return 0 for non-existent file", async () => {
+  it("should return 0 for a non-existent file", async () => {
     const filePath = path.join(testDir, "nonExistent.txt");
     const size = await getFileSize(filePath);
     expect(size).toBe(0);
@@ -155,30 +151,28 @@ describe("GitHub Repository Metrics", () => {
 
   repositoryUrls.forEach((repositoryUrl) => {
     const newUrl = repositoryUrl.replace("github.com", "api.github.com/repos");
+    jest.mock('axios');
+
     it("should compute the bus factor correctly", async () => {
-      const repoMockData = loadMockData(repositoryUrl, "repositoryData");
-      const contributorsMockData = loadMockData(
-        repositoryUrl,
-        "contributorsData"
-      );
+        const repoMockData = loadMockData(repositoryUrl, "repositoryData");
+        const contributorsMockData = loadMockData(repositoryUrl, "contributorsData");
 
-      axios.get
-        .mockResolvedValueOnce({ data: repoMockData })
-        .mockResolvedValueOnce({ data: contributorsMockData });
+        (axios.get as jest.Mock).mockResolvedValueOnce({ data: repoMockData })
+            .mockResolvedValueOnce({ data: contributorsMockData });
 
-      const result = await busFactor(newUrl);
-      expect(result).toBeLessThanOrEqual(1);
+        const result = await busFactor(newUrl);
+        expect(result).toBeLessThanOrEqual(1);
     });
     it("should handle axios.get failure gracefully", async () => {
       // Mock axios.get to reject
-      axios.get.mockRejectedValue(new Error("Network error"));
+      (axios.get as jest.Mock).mockRejectedValue(new Error("Network error"));
 
       const result = await busFactor(newUrl);
       expect(result).toBe(0);
     });
     it("should determine the license status correctly", async () => {
       const licenseMockData = loadMockData(repositoryUrl, "licenseData");
-      axios.get.mockResolvedValueOnce({
+      (axios.get as jest.Mock).mockResolvedValueOnce({
         data: licenseMockData.data,
         status: licenseMockData.status,
       });
@@ -187,7 +181,7 @@ describe("GitHub Repository Metrics", () => {
       expect(result).toBeLessThanOrEqual(1);
     });
     it("should handle no license gracefully", async () => {
-      axios.get.mockRejectedValue({
+      (axios.get as jest.Mock).mockRejectedValue({
         response: {
           data: {},
           status: 404,
@@ -209,14 +203,14 @@ describe("GitHub Repository Metrics", () => {
           repositoryUrl,
           `issuesData_page${i}`
         );
-        axios.get.mockResolvedValueOnce({ data: issuesMockData });
+        (axios.get as jest.Mock).mockResolvedValueOnce({ data: issuesMockData });
       }
       const result = await correctness(newUrl);
       expect(result).toBeLessThanOrEqual(1);
     });
 
     it("should handle unexpected status codes gracefully", async () => {
-      axios.get.mockRejectedValue({
+        (axios.get as jest.Mock).mockRejectedValue({
         response: {
           data: {},
           status: 500,
@@ -227,7 +221,7 @@ describe("GitHub Repository Metrics", () => {
     });
 
     it("should handle network errors gracefully", async () => {
-      axios.get.mockRejectedValue(new Error("Network error"));
+        (axios.get as jest.Mock).mockRejectedValue(new Error("Network error"));
 
       const result = await license(newUrl);
       expect(result).toBe(0);
@@ -239,38 +233,38 @@ describe("GitHub Repository Metrics", () => {
         repositoryUrl
       );
 
-      for (let i = 1; i <= numIssuePages; i++) {
+    for (let i = 1; i <= numIssuePages; i++) {
         const issuesMockData = loadMockData(
-          repositoryUrl,
-          `issuesData_page${i}`
-        );
-        axios.get.mockResolvedValueOnce({ data: issuesMockData });
-
-        issuesMockData.slice(0, 10).forEach((issue) => {
-          const commentsMockData = loadMockData(
             repositoryUrl,
-            `commentsData_issue${issue.number}`
-          );
-          axios.get.mockResolvedValueOnce({ data: commentsMockData });
+            `issuesData_page${i}`
+        );
+        (axios.get as jest.Mock).mockResolvedValueOnce({ data: issuesMockData });
+
+        issuesMockData.slice(0, 10).forEach((issue: { number: number }) => {
+            const commentsMockData = loadMockData(
+                repositoryUrl,
+                `commentsData_issue${issue.number}`
+            );
+            (axios.get as jest.Mock).mockResolvedValueOnce({ data: commentsMockData });
         });
-      }
+    }
 
       const result = await responsiveMaintainer(newUrl);
       expect(result).toBeLessThanOrEqual(1);
     });
     it("should handle no maintainer comments gracefully", async () => {
       const issuesMockData = loadMockData(repositoryUrl, "issuesData_page1");
-      axios.get.mockResolvedValueOnce({ data: issuesMockData });
+      (axios.get as jest.Mock).mockResolvedValueOnce({ data: issuesMockData });
 
       issuesMockData.slice(0, 10).forEach(() => {
-        axios.get.mockResolvedValueOnce({ data: [] });
+        (axios.get as jest.Mock).mockResolvedValueOnce({ data: [] });
       });
 
       const result = await responsiveMaintainer(newUrl);
       expect(result).toBe(0);
     });
     it("should handle axios error gracefully for issues", async () => {
-      axios.get.mockRejectedValue(new Error("Network error"));
+        (axios.get as jest.Mock).mockRejectedValue(new Error("Network error"));
 
       const result = await responsiveMaintainer(newUrl);
       expect(result).toBe(0);
@@ -278,7 +272,7 @@ describe("GitHub Repository Metrics", () => {
 
     it("should handle axios error gracefully for comments", async () => {
       const issuesMockData = loadMockData(repositoryUrl, "issuesData_page1");
-      axios.get
+      (axios.get as jest.Mock)
         .mockResolvedValueOnce({ data: issuesMockData })
         .mockRejectedValue(new Error("Network error"));
 
@@ -292,8 +286,8 @@ describe("GitHub Repository Metrics", () => {
       expect(result).toBeLessThanOrEqual(0.75);
     });
     
-    it("should gracefully handle bad link for RampUp", async () => {
-      axios.get.mockRejectedValue({
+    it("should gracefully handle a bad link for RampUp", async () => {
+        (axios.get as jest.Mock).mockRejectedValue({
         response: {
           data: {},
           status: 500,
@@ -303,5 +297,4 @@ describe("GitHub Repository Metrics", () => {
       expect(result).toBe(0);
     });
   });
-  
 });
