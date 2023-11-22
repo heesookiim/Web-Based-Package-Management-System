@@ -1,187 +1,190 @@
 
 import { Router, Request, Response } from 'express';
-import { exec } from 'child_process';
-import * as fs from 'fs';
+import { promisify } from 'util';
+import { exec as execCallback } from 'child_process';
+import { promises as fs } from 'fs';
+import * as fileSystem from 'fs';
+import * as archiver from 'archiver';
 import * as path from 'path';
+
 import * as schema from '../schema';
 import { connectToDatabase } from "../db";
 
+/**
+USE packages;
+CREATE TABLE packages (Name VARCHAR(255), Version VARCHAR(255), ID INT AUTO_INCREMENT PRIMARY KEY, Content LONGTEXT, URL TEXT, JSProgram MEDIUMTEXT, NET_SCORE FLOAT, RAMP_UP_SCORE FLOAT, CORRECTNESS_SCORE FLOAT, BUS_FACTOR_SCORE FLOAT, RESPONSIVE_MAINTAINER_SCORE FLOAT, LICENSE_SCORE FLOAT, PINNED_RATING_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT);
+DROP packages;
+SELECT * FROM packages;
+**/
+
 const router = Router();
+const exec = promisify(execCallback);
+const readFileAsync =
+promisify(fileSystem.readFile);
 
 router.post('/', async (req: Request, res: Response) => {
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
-    
-    // checks if only either Content or URL is being passsed when inserting a package
+    if (fileSystem.existsSync('rest_api/dump')) {
+        fileSystem.rmSync('rest_api/dump', { recursive: true });
+    }
+    /** checks if only either Content or URL is being passsed when inserting a package **/
     if (!((Content && JSProgram && !URL) || (URL && JSProgram && !Content))) {
         return res.status(400).json({
-            error: "There is missing field(s) in the PackageData or it is formed improperly."
+            error: "There is missing field(s) in the PackageData or it is formed improperly.",
         });
     }
 
-    if (URL) {
-        downloadRepo(URL);
-    } else {
-        
+    /** establish the connection the database **/
+    let connection;
+    try {
+        connection = await connectToDatabase();
+    } catch (error) {
+        return res.status(503).json({
+            error: `Error connecting to the database: ${error}`,
+        });
     }
-    // read package.json and get name, version, and link
-    // call metrics for the code and store it in database
-    // re-zip into base64 to be stores into the database
 
-    // test cases
-    /**
+    /** get the number of packages from the database to set the ID **/
+    let packagesCount: number;
+    try {
+        const [results] = await connection.execute(
+            'SELECT COUNT(*) as rowCount FROM packages'
+            );
+        packagesCount = results[0].rowCount;
+    } catch (error) {
+        return res.status(503).json({
+            error: `Error connecting to the database: ${error}`,
+        });
+    }
 
-    1. unzip successful
-    2. unzip fails (error)
-    3. no package.json (error)
-    4. package.json has no version or link or name (error)
-    5. rezip successful
-    6. rezip fails (error)
+    let name: string = '';
+    let version: string = '';
+    let id: number = packagesCount + 1;
 
-    // errors
-    7. database INSERT fails for metrics
-    8. database INSERT fails for zip file
-
-   **/
-
-//
-//    if (await checkPackageExistence(Content, URL)) {
-//        return res.status(409).json({
-//            error: "Package exists already."
-//        });
-//    }
-
-//    // Check the NetScore in the rating
-//    if (rating && rating.NetScore !== -1 && rating.NetScore <= 0.5) {
-//        return res.status(424).json({
-//            error: "Package is not uploaded due to the disqualified rating."
-//        });
-//    }
-    
-    // connecting to the mysql database
-    const connection = await connectToDatabase();
-    let name = 'overscore3';
-    let version = '1.0.0';
-    let id = 'overscore3';
-    let responseData : schema.Package;
-    if (Content) {
-        
+    /** download the repo from the link and extract information **/
+    if (URL) {
         try {
-            const [results] = await connection.execute( 
-                'INSERT INTO packages (Name, Version, ID, Content, JSProgram) VALUES (?, ?, ?, ?, ?)'
-                , [name, version, id, Content, JSProgram]);
-            await connection.end();
-            responseData = {
-                metadata: { Name:name, Version:version, ID:id },
-                data: { Content, JSProgram }
-            };
-            
+            const packageJsonPath = await downloadRepo(URL);
+            const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+            const packageJson = JSON.parse(packageJsonContent);
+            name = packageJson.name;
+            version = packageJson.version;
         } catch (error) {
-            return res.status(500).json({
-                error: "Failed to insert Content to database. Please try again later."
+            return res.status(503).json({
+                error: `Failed to open the package.json file and/or package.json doesn't contain name/version. Error: ${error}`,
             });
         }
-        
-    } else if (URL) {
-        console.log('entered');
+    } else if (Content) {
+
+    }
+
+    /** check if package already exists in the database **/
+    let packageExists;
+    try {
+        const [existingRows] = await connection.execute(
+            'SELECT * FROM packages WHERE name = ? AND version = ?', [name, version]
+            );
+        packageExists = existingRows.length > 0;
+
+    } catch (error) {
+        return res.status(503).json({
+            error: `Error connecting to the database: ${error}`,
+        });
+    }
+
+    if (packageExists) {
+        return res.status(409).json({
+            error: "Package exists already."
+        });
+    }
+
+    /** fetch metrics
+    // Check the NetScore in the rating
+    if (rating && rating.NetScore !== -1 && rating.NetScore <= 0.5) {
+        return res.status(424).json({
+            error: "Package is not uploaded due to the disqualified rating."
+        });
+    }
+    **/
+
+    /** create the zip file **/
+    const sourceDirectory = path.join(__dirname, '../dump');
+    const zipFileName = `${name} [${version}].zip`;
+    const outputZipPath = `rest_api/${zipFileName}`;
+    const outputZipStream = fileSystem.createWriteStream(outputZipPath);
+    const archive = archiver('zip', {
+        zlib: { level: 9 },
+    });
+
+    archive.pipe(outputZipStream);
+    archive.directory(sourceDirectory, true);
+
+    const fileContentPromise = new Promise((resolve, reject) => {
+        outputZipStream.on('close', () => {
+            readFileAsync(outputZipPath, { encoding: 'base64' })
+                .then(resolve)
+                .catch(reject);
+        });
+    });
+
+    archive.on('error', (error: string) => {
+        return res.status(503).json({
+            error: `Error creating the zip file: ${error}`,
+        });
+    });
+
+    archive.finalize();
+    await fileContentPromise;
+    const fileContent = await fileContentPromise;
+
+    /** database entry **/
+    let responseData : schema.Package;
+    if (URL) {
         try {
             const [results] = await connection.execute(
-                'INSERT INTO packages (Name, Version, ID, URL, JSProgram) VALUES (?, ?, ?, ?, ?)'
-                , [name, version, id, URL, JSProgram]);
-            await connection.end();
+                'INSERT INTO packages (Name, Version, ID, URL, JSProgram, Content) VALUES (?, ?, ?, ?, ?, ?)'
+                , [name, version, id, URL, JSProgram, fileContent]);
             responseData = {
-                metadata: { Name:name, Version:version, ID:id },
+                metadata: { Name: name, Version: version, ID: id.toString() },
                 data: { URL, JSProgram }
             };
 
         } catch (error) {
             return res.status(500).json({
-                error: "Failed to insert URL to the database. Please try again later."
+                error: `Failed to insert URL to the database. Please try again later. ${error}`
             });
         }
 
-    } else {
-        throw new Error('Package is missing Content/URL');
+    } else if (Content) {
+
     }
 
+    if (fileSystem.existsSync('rest_api/dump')) {
+        fileSystem.rmSync('rest_api/dump', { recursive: true });
+    }
+    if (fileSystem.existsSync(outputZipPath)) {
+        fileSystem.rmSync(outputZipPath, { recursive: true });
+    }
+    await connection.end();
     return res.status(201).json(responseData);
 });
 
-//async function savePackageByContent(data: { Content: string; JSProgram: string;}): Promise<void> {
-//    try {
-//        console.log(data);
-//        const response = await axios.post("", data);
-//
-//        if (response.status !== 200) {
-//            throw new Error('Failed to save package to the provided URL.');
-//        }
-//    } catch (error) {
-//        //logger.error(`Error in savePackageToURL: ${error}`);
-//        throw new Error('Failed to save package to the provided URL.');
-//    }
-//}
+async function downloadRepo(url: string)  {
 
-//async function checkPackageExistence(content: any, URL: any): Promise<boolean> {
-//    try {
-//        const response = await axios.get(URL, {
-////            headers: {
-////                'X-Authorization': xAuthorization
-////            },
-//            params: {
-//                content: content
-//            }
-//        });
-//
-//        return response.data && response.data.length > 0;
-//    } catch (error) {
-//        //logger.error(`Error in checkPackageExistence: ${error}`);
-//        return false;
-//    }
-//}
-
-function downloadRepo(url: string): string {
-    
-    let destinationFolder = './extracted_contents';
-    const gitCloneCommand = `git clone ${url} ${destinationFolder}`;
-
-    // Run the git clone command
-    exec(gitCloneCommand, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error: ${error.message}`);
-            return;
+    /** Create 'dump' directory if it doesn't exist **/
+    await fs.mkdir('rest_api/dump').catch(err => {
+        if (err.code !== 'EEXIST') {
+            console.error(`Error creating directory: ${err}`);
         }
-        if (stderr) {
-            console.error(`stderr: ${stderr}`);
-            return;
-        }
-        console.log(`Repository cloned successfully: ${stdout}`);
     });
 
-
-    // Read the package.json file
-    const packageJsonPath = path.join(destinationFolder, 'package.json');
-    const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf-8');
-    
     try {
-        
-        // Define the regular expression pattern to match GitHub URLs
-//        const githubUrlPattern = /"repository"\s*:\s*{\s*"type"\s*:\s*"git",\s*"url"\s*:\s*"(git\+https:\/\/github\.com\/|https:\/\/github\.com\/|git:\/\/github\.com\/)([^"]+\.git)"/;
-//        const match = packageJsonContent.match(githubUrlPattern);
-
-//        // If a match is found, return the GitHub URL
-//        if (match && match[2]) {
-//            const githubUrl = match[2];
-//            // Modify the GitHub URL to the desired format
-//            const formattedUrl = githubUrl.replace(/\.git$/, '');            // If no match is found, return null
-//            console.log(formattedUrl);
-//
-//        }
-
+        await exec(`git clone ${url} rest_api/dump`);
     } catch (error) {
-        console.error('Error:', error.message || error);
+        throw error;
     }
 
-
+    return path.join(`rest_api/dump`, 'package.json');
 }
-
 
 export default router;
