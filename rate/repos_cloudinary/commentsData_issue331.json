@@ -1,0 +1,46 @@
+[
+  {
+    "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/574840142",
+    "html_url": "https://github.com/cloudinary/cloudinary_npm/pull/331#issuecomment-574840142",
+    "issue_url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/331",
+    "id": 574840142,
+    "node_id": "MDEyOklzc3VlQ29tbWVudDU3NDg0MDE0Mg==",
+    "user": {
+      "login": "asisayag2",
+      "id": 42962333,
+      "node_id": "MDQ6VXNlcjQyOTYyMzMz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42962333?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/asisayag2",
+      "html_url": "https://github.com/asisayag2",
+      "followers_url": "https://api.github.com/users/asisayag2/followers",
+      "following_url": "https://api.github.com/users/asisayag2/following{/other_user}",
+      "gists_url": "https://api.github.com/users/asisayag2/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/asisayag2/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/asisayag2/subscriptions",
+      "organizations_url": "https://api.github.com/users/asisayag2/orgs",
+      "repos_url": "https://api.github.com/users/asisayag2/repos",
+      "events_url": "https://api.github.com/users/asisayag2/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/asisayag2/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "created_at": "2020-01-15T20:22:56Z",
+    "updated_at": "2020-01-15T20:22:56Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "@patrick-tolosa , please make sure Travis passes before merging",
+    "reactions": {
+      "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/574840142/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "performed_via_github_app": null
+  }
+]
