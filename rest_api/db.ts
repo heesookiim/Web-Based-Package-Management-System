@@ -25,12 +25,12 @@ export async function initializeDatabase() {
 
     try {
         connection = await mysql.createConnection(dbConfig);
-        await connection.query('CREATE DATABASE IF NOT EXISTS ' + mysql.escapeId(dbName));
-        await connection.query('USE ' + mysql.escapeId(dbName));
+        await connection.query('CREATE DATABASE IF NOT EXISTS ' + dbName);
+        await connection.query('USE ' + dbName);
         await connection.query(tableCreationQuery);
         // console.log('Database initialized successfully');
     } catch (error) {
-        // console.error('Unable to initialize the database:', error);
+        console.error('Unable to initialize the database:', error);
         throw error;
     } finally {
         if (connection) {

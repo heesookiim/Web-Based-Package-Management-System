@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { FieldPacket, RowDataPacket } from 'mysql2';
 import * as schema from '../schema';
 import * as db from '../db';
+import { version } from 'os';
 
 const router = Router();
 
@@ -21,43 +22,36 @@ router.get('/', async (req: Request, res: Response) => {
     const connection = await db.connectToDatabase();
 
     const { Name, Version } = package_queries[0];
-    let query = '';
+    let query = 'SELECT Name, Version, ID ' +
+                'FROM ' + db.dbName + '.' + db.tableName + ' ';
     let queryParam: string[] = [];
 
-    if (Name === "*") {
-        // console.log('Retrieving all packages');
-        query = 'SELECT Name, Version, ID ' +
-                'FROM ' + db.dbName + '.' + db.tableName + ' ' +
-                'LIMIT ? OFFSET ?';
-        queryParam = [limit + '', offset + ''];
+    const versionConditions = [];
+
+    // console.log('Retrieving packages that exactly match with the query');
+    if (Version.includes('-')) {
+        // Bounded range
+        const [start, end] = Version.split('-');
+        versionConditions.push('Version BETWEEN ? AND ?');
+        queryParam.push(start, end);
+    } else if (Version.startsWith('^') || Version.startsWith('~')) {
+        // Carat or Tilde
+        const baseVersion = Version.substring(1);
+        const upperBound = calcUpperBound(baseVersion, Version[0]);
+        versionConditions.push('Version >= ? AND Version < ?');
+        queryParam.push(baseVersion, upperBound);
+    } else {
+        // Exact
+        versionConditions.push('Version = ?');
+        queryParam.push(Version);
     }
-    else {
-        // console.log('Retrieving packages that exactly match with the query');
-        if (Version.includes('-')) {
-            // Bounded range
-            const [start, end] = Version.split('-');
-            query = 'SELECT Name, Version, ID ' +
-                    'FROM ' + db.dbName + '.' + db.tableName + ' ' +
-                    'WHERE Name = ? AND Version BETWEEN ? AND ? ' +
-                    'LIMIT ? OFFSET ?';
-            queryParam = [Name, start, end, limit + '', offset + ''];
-        } else if (Version.startsWith('^') || Version.startsWith('~')) {
-            // Carat 
-            const baseVersion = Version.substring(1);
-            const upperBound = calcUpperBound(baseVersion, Version[0]);
-            query = 'SELECT Name, Version, ID ' +
-                    'FROM ' + db.dbName + '.' + db.tableName + ' ' +
-                    'WHERE Name = ? AND Version >= ? AND Version < ? ' +
-                    'LIMIT ? OFFSET ?';
-            queryParam = [Name, baseVersion, upperBound, limit + '', offset + ''];
-        } else {
-            // Exact
-            query = 'SELECT Name, Version, ID ' +
-                    'FROM ' + db.dbName + '.' + db.tableName + ' ' +
-                    'WHERE Name = ? AND Version = ? ' +
-                    'LIMIT ? OFFSET ?';
-            queryParam = [Name, Version, limit + '', offset + ''];
-        }
+    if (Name !== '*') {
+        versionConditions.push('Name = ?');
+        queryParam.push(Name);
+    }
+
+    if (versionConditions.length) {
+        query += 'WHERE ' + versionConditions.join(' AND ');
     }
 
     const [results] = await connection.execute(query, queryParam) as [RowDataPacket[], FieldPacket[]];
