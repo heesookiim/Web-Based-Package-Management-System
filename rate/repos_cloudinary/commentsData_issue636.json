@@ -1,0 +1,46 @@
+[
+  {
+    "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/1790472866",
+    "html_url": "https://github.com/cloudinary/cloudinary_npm/issues/636#issuecomment-1790472866",
+    "issue_url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/636",
+    "id": 1790472866,
+    "node_id": "IC_kwDOAEh2wM5quHKi",
+    "user": {
+      "login": "tommyg-cld",
+      "id": 97883332,
+      "node_id": "U_kgDOBdWUxA",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97883332?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/tommyg-cld",
+      "html_url": "https://github.com/tommyg-cld",
+      "followers_url": "https://api.github.com/users/tommyg-cld/followers",
+      "following_url": "https://api.github.com/users/tommyg-cld/following{/other_user}",
+      "gists_url": "https://api.github.com/users/tommyg-cld/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/tommyg-cld/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/tommyg-cld/subscriptions",
+      "organizations_url": "https://api.github.com/users/tommyg-cld/orgs",
+      "repos_url": "https://api.github.com/users/tommyg-cld/repos",
+      "events_url": "https://api.github.com/users/tommyg-cld/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/tommyg-cld/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "created_at": "2023-11-02T10:33:53Z",
+    "updated_at": "2023-11-02T10:34:01Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "@Bilboramix thx for raising this and apologies for the delay - so this is a known issue that we hope to address it soon. We will keep you posted.",
+    "reactions": {
+      "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/1790472866/reactions",
+      "total_count": 1,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 1,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "performed_via_github_app": null
+  }
+]
