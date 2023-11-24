@@ -9,16 +9,18 @@ export const dbConfig = {
 };
 
 // Maybe -- USE ENV FILE INSTEAD 
-export let dbName = '461ProjectPhase2';
-export let tableName = 'package';
+export const dbName = '461ProjectPhase2';
+export const tableName = 'package';
 
 export const tableCreationQuery = 'CREATE TABLE IF NOT EXISTS ' + tableName + ' (' +
     'Name VARCHAR(255), ' +
     'Version VARCHAR(255), ' +
-    'ID VARCHAR(255), ' +
-    'URL VARCHAR(255), ' +
+    'ID INT AUTO_INCREMENT PRIMARY KEY, ' +
+    'URL TEXT, ' +
     'Content LONGTEXT, ' +
-    'JSProgram TEXT' +
+    'JSProgram MEDIUMTEXT, ' +
+    'NET_SCORE FLOAT, RAMP_UP_SCORE FLOAT, CORRECTNESS_SCORE FLOAT, BUS_FACTOR_SCORE FLOAT, RESPONSIVE_MAINTAINER_SCORE FLOAT, LICENSE_SCORE INT, ' +
+    'PINNED_RATING_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT' +
     ');';
 
 export async function initializeDatabase() {
@@ -35,7 +37,7 @@ export async function initializeDatabase() {
     } finally {
         if (connection) {
             await connection.end();
-            logger.info('Database $(dbName) created successfully');
+            logger.info('Database ' + dbName + ' initialized successfully');
         }
     }
 }

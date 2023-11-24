@@ -5,37 +5,39 @@ import post_package from './routes/post_package';
 import post_packages from './routes/post_packages';
 import * as path from 'path';
 import { initializeDatabase } from './db';
+import * as bodyParser from 'body-parser';
 import { logger } from '../logger_cfg';
+import * as http from 'http';
 
 // Load environment variables from .env file
 dotenv.config();
 const PORT = process.env.PORT || 3000;
 
-async function checkDatabase() {
-  try {
-    await initializeDatabase();
-  } catch (error) {
-    logger.error('Failed to intialize Database due to an error:', error);
-    process.exit(1);
-  }
-}
-
-checkDatabase();
-
 const app = express();
+app.use(bodyParser.json({ limit: '4096mb' }));
+app.use(bodyParser.urlencoded({ limit: '4096mb', extended: true }));
 app.use(express.json());
 
-// Start the server
-app.listen(PORT, () => {
-  logger.info(`API running on port ${PORT}`);
-});
+// Check the database and initialize it before starting the server
+let server: http.Server
+initializeDatabase()
+    .then(() => {
+        logger.info('Starting the server');
+        server = app.listen(PORT, () => {
+        logger.info(`API running on port ${PORT}`);
+        });
+        
+        // Setup the routes
+        app.use('/package', post_package);
+        app.use('/packages', post_packages);
+        
+        app.get('/', (req, res)=> {
+        res.sendFile(path.join(__dirname, '../web', 'add.html'));
+        });
 
-// Setup the routes
-app.use('/package', post_package);
-app.use('/packages', post_packages);
+        app.get('/all', (req, res)=> {
+            res.sendFile(path.join(__dirname, '../web', 'packages.html'));
+          });          
+    })
 
-app.get('/', (req, res)=> {
-  res.sendFile(path.join(__dirname, '../web', 'add.html'));
-});
-
-export default app;
+export { server, app };

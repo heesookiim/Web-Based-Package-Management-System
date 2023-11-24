@@ -18,3 +18,4 @@ rest_api/dump
 rest_api/*.zip
 .DS_STORE
 *txt
+rate/*.js
