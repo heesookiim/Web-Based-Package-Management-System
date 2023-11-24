@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { FieldPacket, RowDataPacket } from 'mysql2';
-import * as schema from '../schema';
+import * as schema from '../../schema';
 import * as db from '../db';
 import { version } from 'os';
+import { logger } from '../../logger_cfg';
 
 const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
-    // console.log('POST /packages performed');
+    logger.info('POST /packages performed');
 
     // Q. INT or STR for offset and limit?
     const offset = parseInt(req.query.offset as string) || 0;
@@ -15,7 +16,7 @@ router.get('/', async (req: Request, res: Response) => {
     const limit = 10;   // number of data rows per page
 
     if (!Array.isArray(package_queries) || package_queries.length === 0) {
-        console.error("There is missing field(s) in the PackageQuery or it is formed improperly");
+        logger.error("There is missing field(s) in the PackageQuery or it is formed improperly");
         return res.status(400);
     }
 
@@ -28,7 +29,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     const versionConditions = [];
 
-    // console.log('Retrieving packages that exactly match with the query');
+    logger.info('Retrieving packages that exactly match with the query');
     if (Version.includes('-')) {
         // Bounded range
         const [start, end] = Version.split('-');
@@ -56,20 +57,22 @@ router.get('/', async (req: Request, res: Response) => {
 
     const [results] = await connection.execute(query, queryParam) as [RowDataPacket[], FieldPacket[]];
 
-    // console.log('POST /packages finished successfully');
     await connection.end();
 
     const resultsLength = results.length
     if (resultsLength === 0) {
+        logger.error('There is no such package in the database');
         return res.status(404).json({ error: 'There is no such package in the database'});
     }
 
     if (( offset != 0 && resultsLength > offset * limit ) || ( offset == 0 && resultsLength > limit )) {
+        logger.error('Too many packages returned')
         return res.status(413).json({ error: 'Too many packages returned'});
     }
 
     res.setHeader('offset', String(offset));
     res.status(200).json(results);
+    logger.info('POST /packages finished successfully');
 })
 
 function calcUpperBound(version: string, type: string): string {
@@ -83,7 +86,7 @@ function calcUpperBound(version: string, type: string): string {
             return `${major}.${Number(minor) + 1}.0`;
         }
         else {
-            console.error('There is no such type');
+            logger.error('There is no such type');
         }
     }
     return version;

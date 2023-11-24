@@ -7,7 +7,7 @@ import * as archiver from 'archiver';
 import * as pathModule from 'path';
 import * as AdmZip from 'adm-zip'; // Import the 'adm-zip' module
 
-import * as schema from '../schema';
+import * as schema from '../../schema';
 import { connectToDatabase, dbName, tableName } from "../db";
 
 /**

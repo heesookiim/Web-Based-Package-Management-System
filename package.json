@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "server": "tsc && nodemon server.js",
-    "API": "tsc rest_api/*.ts && node rest_api/app.js"
+    "API": "tsc rest_api/*.ts && node rest_api/app.js",
+    "testAll": "npx jest rate/*test.ts tests/db.test.ts --coverage",
+    "test": "tsc rest_api/db.ts && npx jest tests/db.test.ts --coverage"
   },
   "repository": {
     "type": "git",

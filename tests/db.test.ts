@@ -8,7 +8,7 @@ jest.mock('mysql2/promise', () => ({
 }));
 
 afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
 });
 
 // Unit testing for database initialization 
@@ -24,18 +24,17 @@ describe('Database Initialization and Connection', () => {
         await db.initializeDatabase();
 
         expect(mysql.createConnection).toHaveBeenCalled();
-        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE DATABASE IF NOT EXISTS'));
-        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS'));
+        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE DATABASE IF NOT EXISTS 461ProjectPhase2'));
+        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('USE 461ProjectPhase2'));
+        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS package (Name VARCHAR(255), Version VARCHAR(255), ID VARCHAR(255), URL VARCHAR(255), Content LONGTEXT, JSProgram TEXT);'));
         expect(mockEnd).toHaveBeenCalled();
-    })
+    });
 
     it('handles connection failure in initialization', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         const mockError = new Error('Connection faield');
         (mysql.createConnection as jest.Mock).mockRejectedValue(mockError);
         await expect(db.initializeDatabase()).rejects.toThrow(mockError);
-        consoleSpy.mockRestore();
-    })
+    });
 
     it('fails to create the database', async () => {
         const mockQuery = jest.fn()
@@ -49,6 +48,50 @@ describe('Database Initialization and Connection', () => {
         });
 
         await expect(db.initializeDatabase()).rejects.toThrow('Failed to create database');
-        expect(mockEnd).toHaveBeenCalled;
-    })
+        await expect(mockEnd).toHaveBeenCalled;
+    });
+
+    it('fails to set the active database', async () => {
+        const mockEnd = jest.fn();
+        const mockQuery = jest.fn()
+            .mockResolvedValueOnce(undefined) // First call to create database succeeds
+            .mockRejectedValueOnce(new Error('Failed to set active database')); // Second call to set active database fails
+
+        (mysql.createConnection as jest.Mock).mockResolvedValue({
+            query: mockQuery,
+            end: mockEnd,
+        });
+
+        await expect(db.initializeDatabase()).rejects.toThrow('Failed to set active database');
+        await expect(mockEnd).toHaveBeenCalled();
+    });
+
+    it('fails to create the table', async () => {
+        const mockEnd = jest.fn();
+        const mockQuery = jest.fn()
+            .mockResolvedValueOnce(undefined) // Create database succeeds
+            .mockResolvedValueOnce(undefined) // Set active database succeeds
+            .mockRejectedValueOnce(new Error('Failed to create table')); // Create table fails
+
+        (mysql.createConnection as jest.Mock).mockResolvedValue({
+            query: mockQuery,
+            end: mockEnd,
+        });
+
+        await expect(db.initializeDatabase()).rejects.toThrow('Failed to create table');
+        await expect(mockEnd).toHaveBeenCalled();
+    });
+
+    it('connects to the database successfully', async () => {
+        const mockExecute = jest.fn().mockResolvedValue([[], []]);
+        (mysql.createConnection as jest.Mock).mockResolvedValue({
+            execute: mockExecute,
+            end: jest.fn()
+        });
+
+        const connection = await db.connectToDatabase();
+        await expect(connection).toBeDefined();
+        await expect(mysql.createConnection).toHaveBeenCalledWith(db.dbConfig);
+    });
+    
 })

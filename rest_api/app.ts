@@ -5,6 +5,7 @@ import post_package from './routes/post_package';
 import post_packages from './routes/post_packages';
 import * as path from 'path';
 import { initializeDatabase } from './db';
+import { logger } from '../logger_cfg';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -14,7 +15,7 @@ async function checkDatabase() {
   try {
     await initializeDatabase();
   } catch (error) {
-    console.error('Failed to intialize Database due to an error:', error);
+    logger.error('Failed to intialize Database due to an error:', error);
     process.exit(1);
   }
 }
@@ -26,7 +27,7 @@ app.use(express.json());
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`API running on port ${PORT}`);
+  logger.info(`API running on port ${PORT}`);
 });
 
 // Setup the routes
