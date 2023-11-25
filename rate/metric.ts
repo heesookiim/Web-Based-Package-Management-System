@@ -424,7 +424,12 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
       return 0;
     }
 
+    logger.debug('Readme size: ' + readmeSize);
+    logger.debug('Codebase size: ' + codebaseSize);
+
     var ratio = Math.log(readmeSize + 1) / Math.log(codebaseSize + 1);
+    logger.debug('Readme vs codebase ratio: ' + ratio);
+    ratio = 1 + Math.log10(ratio);
     logger.debug('Readme vs codebase ratio: ' + ratio);
 
     // check for 0 score
