@@ -25,6 +25,7 @@ initializeDatabase()
         logger.info('Starting the server');
         server = app.listen(PORT, () => {
         logger.info(`API running on port ${PORT}`);
+        console.log('API running on port ${PORT}');
         });
         
         // Setup the routes

@@ -32,7 +32,7 @@ export async function initializeDatabase() {
         await connection.query('USE ' + dbName);
         await connection.query(tableCreationQuery);
         await connection.query(`SET GLOBAL max_allowed_packet = 524288000;`);
-        await connection.query('ALTER TABLE ' + mysql.escapeId(tableName) + ' AUTO_INCREMENT = 1');
+        await connection.query('ALTER TABLE ' + tableName + ' AUTO_INCREMENT = 1');
     } catch (error) {
         logger.error('Unable to initialize the database:', error);
         throw error;

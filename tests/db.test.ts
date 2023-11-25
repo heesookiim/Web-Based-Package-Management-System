@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 // Unit testing for database initialization 
-describe('Database Initialization and Connection', () => {
+describe('Database Initialization', () => {
     it('initializes the database successfully', async () => {
         const mockQuery = jest.fn().mockResolvedValue([[], []]);
         const mockEnd = jest.fn();
@@ -26,14 +26,8 @@ describe('Database Initialization and Connection', () => {
         expect(mysql.createConnection).toHaveBeenCalled();
         expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE DATABASE IF NOT EXISTS 461ProjectPhase2'));
         expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('USE 461ProjectPhase2'));
-        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS package (Name VARCHAR(255), Version VARCHAR(255), ID VARCHAR(255), URL VARCHAR(255), Content LONGTEXT, JSProgram TEXT);'));
+        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS package (Name VARCHAR(255), Version VARCHAR(255), ID INT AUTO_INCREMENT PRIMARY KEY, URL TEXT, Content LONGTEXT, JSProgram MEDIUMTEXT, NET_SCORE FLOAT, RAMP_UP_SCORE FLOAT, CORRECTNESS_SCORE FLOAT, BUS_FACTOR_SCORE FLOAT, RESPONSIVE_MAINTAINER_SCORE FLOAT, LICENSE_SCORE INT, PINNED_PRACTICE_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT);'));
         expect(mockEnd).toHaveBeenCalled();
-    });
-
-    it('handles connection failure in initialization', async () => {
-        const mockError = new Error('Connection faield');
-        (mysql.createConnection as jest.Mock).mockRejectedValue(mockError);
-        await expect(db.initializeDatabase()).rejects.toThrow(mockError);
     });
 
     it('fails to create the database', async () => {
@@ -81,6 +75,14 @@ describe('Database Initialization and Connection', () => {
         await expect(db.initializeDatabase()).rejects.toThrow('Failed to create table');
         await expect(mockEnd).toHaveBeenCalled();
     });
+})
+
+describe('Database Connection', () => {
+    it('handles connection failure in initialization', async () => {
+        const mockError = new Error('Connection faield');
+        (mysql.createConnection as jest.Mock).mockRejectedValue(mockError);
+        await expect(db.initializeDatabase()).rejects.toThrow(mockError);
+    });
 
     it('connects to the database successfully', async () => {
         const mockExecute = jest.fn().mockResolvedValue([[], []]);
@@ -93,5 +95,11 @@ describe('Database Initialization and Connection', () => {
         await expect(connection).toBeDefined();
         await expect(mysql.createConnection).toHaveBeenCalledWith(db.dbConfig);
     });
+
+    it('should log an error and throw when connection fails', async () => {
+        const mockError = new Error('Connection failed');
+        (mysql.createConnection as jest.Mock).mockRejectedValue(mockError);
     
+        await expect(db.connectToDatabase()).rejects.toThrow('Connection failed');
+      });
 })

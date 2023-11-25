@@ -4,10 +4,8 @@
   "description": "phase2",
   "main": "index.js",
   "scripts": {
-    "server": "tsc && nodemon server.js",
     "API": "npx ts-node rest_api/*.ts ",
-    "testAll": "npx jest rate/*test.ts tests/db.test.ts --coverage",
-    "test": "tsc rest_api/db.ts && npx jest tests/db.test.ts --coverage"
+    "test": "npx jest db.test.ts --coverage"
   },
   "repository": {
     "type": "git",
