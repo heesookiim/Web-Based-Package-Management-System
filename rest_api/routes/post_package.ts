@@ -5,17 +5,15 @@ import { promises as fs } from 'fs';
 import * as fileSystem from 'fs';
 import * as archiver from 'archiver';
 import * as pathModule from 'path';
-import * as AdmZip from 'adm-zip'; // Import the 'adm-zip' module
+import * as AdmZip from 'adm-zip';
+import * as getGithubUrl from 'get-github-url';
 
 import * as schema from '../../schema';
 import { connectToDatabase, dbName, tableName } from "../db";
+import { getAllRatings } from "../../rate/analyze"
+import { analyzePackages, analyzePullRequests } from "../../rate/new-metrics"
+import { logger } from "../../logger_cfg";
 
-/**
-USE packages;
-CREATE TABLE packages (Name VARCHAR(255), Version VARCHAR(255), ID INT AUTO_INCREMENT PRIMARY KEY, Content LONGTEXT, URL TEXT, JSProgram MEDIUMTEXT, NET_SCORE FLOAT, RAMP_UP_SCORE FLOAT, CORRECTNESS_SCORE FLOAT, BUS_FACTOR_SCORE FLOAT, RESPONSIVE_MAINTAINER_SCORE FLOAT, LICENSE_SCORE FLOAT, PINNED_RATING_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT);
-DROP packages;
-SELECT * FROM packages;
-**/
 
 const router = Router();
 const exec = promisify(execCallback);
@@ -51,6 +49,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     let name: string = '';
     let version: string = '';
+    let url: string = '';
 
     /** download the repo from the link and extract information **/
     if (URL) {
@@ -78,6 +77,12 @@ router.post('/', async (req: Request, res: Response) => {
         const packageJson = JSON.parse(packageJsonContent);
         name = packageJson.name;
         version = packageJson.version;
+        if (URL) {
+            url = URL;
+        } else {
+            url = getGithubUrl(packageJson.repository.url as string);
+        }
+
     } catch (error) {
         return res.status(503).json({
             error: `Failed to open the package.json file and/or package.json doesn't contain name/version. ${error}`,
@@ -104,6 +109,14 @@ router.post('/', async (req: Request, res: Response) => {
         });
     }
 
+//    let rating1 = await getAllRatings(url);
+//    let rating2 = await analyzePackages(url as string);
+//    let rating3 = await analyzePullRequests(url);
+
+//    console.log(rating1);
+//    console.log(rating2);
+//    console.log(rating3);
+
     /** fetch metrics
     // Check the NetScore in the rating
     if (rating && rating.NetScore !== -1 && rating.NetScore <= 0.5) {
@@ -123,9 +136,9 @@ router.post('/', async (req: Request, res: Response) => {
         try {
             const [results] = await connection.execute(
                 `INSERT INTO ${table} (Name, Version, URL, JSProgram, Content) VALUES (?, ?, ?, ?, ?)`
-                , [name, version, URL, JSProgram, fileContent]);
+                , [name, version, url, JSProgram, fileContent]);
             responseData = {
-                metadata: { Name: name, Version: version, ID: '`' },
+                metadata: { Name: name, Version: version, ID: results.insertId },
                 data: { URL, JSProgram }
             };
 
@@ -135,15 +148,15 @@ router.post('/', async (req: Request, res: Response) => {
             });
         }
 
-    } else if (Content) {
+    } else {
         try {
             const [results] = await connection.execute(
                 `INSERT INTO ${table} (Name, Version, JSProgram, Content) VALUES (?, ?, ?, ?)`
                 , [name, version, JSProgram, fileContent]);
             responseData = {
-                metadata: { Name: name, Version: version, ID: '`' },
-                data: { URL, JSProgram }
-            };
+                metadata: { Name: name, Version: version, ID: results.insertId },
+                data: { Content, JSProgram }
+            }
 
         } catch (error) {
             return res.status(500).json({
@@ -207,6 +220,7 @@ export async function ZIP(sourcePath: string, name: string, version: string, fil
     });
 
     archive.pipe(outputZipStream);
+
     archive.directory(sourceDirectory, true);
 
     const fileContentPromise = new Promise((resolve, reject) => {

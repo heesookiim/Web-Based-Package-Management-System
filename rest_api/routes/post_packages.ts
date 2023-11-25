@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import { FieldPacket, RowDataPacket } from 'mysql2';
 import * as schema from '../../schema';
 import * as db from '../db';
-import { version } from 'os';
 import { logger } from '../../logger_cfg';
 
 const router = Router();

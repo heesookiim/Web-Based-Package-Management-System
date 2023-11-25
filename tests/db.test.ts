@@ -54,8 +54,8 @@ describe('Database Initialization and Connection', () => {
     it('fails to set the active database', async () => {
         const mockEnd = jest.fn();
         const mockQuery = jest.fn()
-            .mockResolvedValueOnce(undefined) // First call to create database succeeds
-            .mockRejectedValueOnce(new Error('Failed to set active database')); // Second call to set active database fails
+            .mockResolvedValueOnce(undefined)
+            .mockRejectedValueOnce(new Error('Failed to set active database'));
 
         (mysql.createConnection as jest.Mock).mockResolvedValue({
             query: mockQuery,
