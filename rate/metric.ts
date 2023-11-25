@@ -420,6 +420,7 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
     const codebaseSize = await getDirectorySize(localDir, readmePath);
     var ratio = Math.log(readmeSize + 1) / Math.log(codebaseSize + 1);
     logger.debug('Readme vs codebase ratio: ' + ratio);
+    ratio = 1 + Math.log(ratio);
 
     // remove temp directory
     tempDir.removeCallback();
@@ -427,7 +428,7 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
     // finalize score
     ratio = parseFloat(ratio.toFixed(1));
     logger.info('RampUp raw score: ' + ratio);
-    if(ratio > 1) {
+    if(ratio > 1 || ratio < 0) {
       logger.info('Rampup score: 1');
       return 1;
     }
