@@ -20,7 +20,7 @@ export const tableCreationQuery = 'CREATE TABLE IF NOT EXISTS ' + tableName + ' 
     'Content LONGTEXT, ' +
     'JSProgram MEDIUMTEXT, ' +
     'NET_SCORE FLOAT, RAMP_UP_SCORE FLOAT, CORRECTNESS_SCORE FLOAT, BUS_FACTOR_SCORE FLOAT, RESPONSIVE_MAINTAINER_SCORE FLOAT, LICENSE_SCORE INT, ' +
-    'PINNED_RATING_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT' +
+    'PINNED_PRACTICE_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT' +
     ');';
 
 export async function initializeDatabase() {
@@ -31,6 +31,8 @@ export async function initializeDatabase() {
         await connection.query('CREATE DATABASE IF NOT EXISTS ' + dbName);
         await connection.query('USE ' + dbName);
         await connection.query(tableCreationQuery);
+        await connection.query(`SET GLOBAL max_allowed_packet = 524288000;`);
+        await connection.query('ALTER TABLE ' + mysql.escapeId(tableName) + ' AUTO_INCREMENT = 1');
     } catch (error) {
         logger.error('Unable to initialize the database:', error);
         throw error;

@@ -6,13 +6,15 @@ import * as fileSystem from 'fs';
 import * as archiver from 'archiver';
 import * as pathModule from 'path';
 import * as AdmZip from 'adm-zip';
-import * as getGithubUrl from 'get-github-url';
+let getGithubUrl = require('get-github-url');
+import { FieldPacket, RowDataPacket } from 'mysql2';
 
 import * as schema from '../../schema';
 import { connectToDatabase, dbName, tableName } from "../db";
 import { getAllRatings } from "../../rate/analyze"
 import { analyzePackages, analyzePullRequests } from "../../rate/new-metrics"
 import { logger } from "../../logger_cfg";
+import {Package, PackageRating} from "../../schema";
 
 
 const router = Router();
@@ -94,7 +96,7 @@ router.post('/', async (req: Request, res: Response) => {
     try {
         const [existingRows] = await connection.execute(
             `SELECT * FROM ${table} WHERE name = ? AND version = ?`, [name, version]
-            );
+            ) as [RowDataPacket[], FieldPacket[]];
         packageExists = existingRows.length > 0;
 
     } catch (error) {
@@ -109,13 +111,7 @@ router.post('/', async (req: Request, res: Response) => {
         });
     }
 
-//    let rating1 = await getAllRatings(url);
-//    let rating2 = await analyzePackages(url as string);
-//    let rating3 = await analyzePullRequests(url);
 
-//    console.log(rating1);
-//    console.log(rating2);
-//    console.log(rating3);
 
     /** fetch metrics
     // Check the NetScore in the rating
@@ -130,38 +126,54 @@ router.post('/', async (req: Request, res: Response) => {
     const zipResult = await ZIP('../dump', name, version, 'rest_api', res);
     const { fileContent, outputZipPath }: { fileContent: string, outputZipPath: string } = zipResult;
 
+    let packageRating: PackageRating = await getAllRatings(url);
+    console.log(packageRating);
     /** database entry **/
     let responseData : schema.Package;
+    let result;
+    try {
+        const [results] = await connection.execute(
+            `INSERT INTO ${table} (Name, Version, URL, JSProgram, Content,
+                BUS_FACTOR_SCORE,
+                CORRECTNESS_SCORE,
+                RAMP_UP_SCORE,
+                RESPONSIVE_MAINTAINER_SCORE,
+                LICENSE_SCORE,
+                PINNED_PRACTICE_SCORE,
+                PULL_REQUEST_RATING_SCORE,
+                NET_SCORE
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            , [name,
+               version,
+               url,
+               JSProgram,
+               fileContent,
+               packageRating.BusFactor,
+               packageRating.Correctness,
+               packageRating.RampUp,
+               packageRating.ResponsiveMaintainer,
+               packageRating.LicenseScore,
+               packageRating.GoodPinningPractice,
+               packageRating.PullRequest,
+               packageRating.NetScore]) as any;
+
+        result = results;
+
+    } catch (error) {
+        return res.status(500).json({
+            error: `Failed to insert URL to the database. Please try again later. ${error}`
+        });
+    }
+
     if (URL) {
-        try {
-            const [results] = await connection.execute(
-                `INSERT INTO ${table} (Name, Version, URL, JSProgram, Content) VALUES (?, ?, ?, ?, ?)`
-                , [name, version, url, JSProgram, fileContent]);
-            responseData = {
-                metadata: { Name: name, Version: version, ID: results.insertId },
-                data: { URL, JSProgram }
-            };
-
-        } catch (error) {
-            return res.status(500).json({
-                error: `Failed to insert URL to the database. Please try again later. ${error}`
-            });
-        }
-
+        responseData = {
+            metadata: { Name: name, Version: version, ID: result.insertId },
+            data: { URL, JSProgram }
+        };
     } else {
-        try {
-            const [results] = await connection.execute(
-                `INSERT INTO ${table} (Name, Version, JSProgram, Content) VALUES (?, ?, ?, ?)`
-                , [name, version, JSProgram, fileContent]);
-            responseData = {
-                metadata: { Name: name, Version: version, ID: results.insertId },
-                data: { Content, JSProgram }
-            }
-
-        } catch (error) {
-            return res.status(500).json({
-                error: `Failed to insert URL to the database. Please try again later. ${error}`
-            });
+        responseData = {
+            metadata: { Name: name, Version: version, ID: result.insertId },
+            data: { Content, JSProgram }
         }
     }
 
@@ -210,7 +222,7 @@ export async function downloadRepo(url: string, path: string)  {
     return path;
 }
 
-export async function ZIP(sourcePath: string, name: string, version: string, filePath: string, res) {
+export async function ZIP(sourcePath: string, name: string, version: string, filePath: string, res: Response) {
     const sourceDirectory = pathModule.join(__dirname, sourcePath);
     const zipFileName = `${name} [${version}].zip`;
     const outputZipPath: string = `${filePath}/${zipFileName}`;
@@ -221,7 +233,7 @@ export async function ZIP(sourcePath: string, name: string, version: string, fil
 
     archive.pipe(outputZipStream);
 
-    archive.directory(sourceDirectory, true);
+    archive.directory(sourceDirectory, '/');
 
     const fileContentPromise = new Promise((resolve, reject) => {
         outputZipStream.on('close', () => {

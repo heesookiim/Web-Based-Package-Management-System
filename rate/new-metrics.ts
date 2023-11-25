@@ -1,4 +1,7 @@
 const axios = require('axios');
+import * as pathModule from 'path';
+import { promises as fs } from 'fs';
+
 import { logger } from "../logger_cfg";
 const personalAccessToken = process.env.GITHUB_TOKEN; // personalAccessToken stored locally
 
@@ -67,7 +70,10 @@ export async function analyzePackages(gitHubLink: string): Promise<any> {
     dependenciesFlag = false; // flag to check if there are dependencies in the package.json file (true if greater than 0)
 
     try {
-        const packageJson = await getPackageJsonFromGitHubRepo(gitHubLink); // converts the gitHubLink to a raw GitHub response for that file
+//        const packageJson = await getPackageJsonFromGitHubRepo(gitHubLink); // converts the gitHubLink to a raw GitHub response for that file
+        const packageJsonPath = pathModule.join('rest_api/dump', 'package.json')
+        const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
+        const packageJson = JSON.parse(packageJsonContent);
         countPackagesWithCaretRange(packageJson, 'dependencies'); // analyzes the dependencies data type from the response
         countPackagesWithCaretRange(packageJson, 'devDependencies'); // analyzes the devDependencies data type from the response
 
