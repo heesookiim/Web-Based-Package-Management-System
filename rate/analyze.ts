@@ -167,19 +167,20 @@ export async function getAllRatings(repoUrl: string) {
 /*
 // used for running from bash script for local testing
 (async () => {
-    if (argv.length >= 3) {
-        const file = argv[2];
-        logger.info('Analyzing file: ' + file);
+    //if (argv.length >= 3) {
+    //    const file = argv[2];
+    //    logger.info('Analyzing file: ' + file);
         
         // urls from file
-        const urls = fs.readFileSync(file, 'utf-8').split('\r\n').filter(Boolean);
-        for(const url of urls) {
-            let scores = await analyzeDependencies(url);
-            console.log(JSON.stringify(scores));
-        }
+    //    const urls = fs.readFileSync(file, 'utf-8').split('\r\n').filter(Boolean);
+    //    for(const url of urls) {
+    //        let scores = await analyzeDependencies(url);
+    //        console.log(JSON.stringify(scores));
+    //    }
+    //}
+    if (argv.length >= 3) {
+        const url = argv[2];
+        let scores = await getAllRatings(url);
+        console.log(JSON.stringify(scores));
     }
-    //if (argv.length >= 3) {
-    //    const url = argv[2];
-    //    let scores = await getAllRatings(url);
-    //    console.log(JSON.stringify(scores));
 })();*/

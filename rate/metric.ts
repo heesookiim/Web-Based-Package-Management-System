@@ -416,10 +416,25 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
     } catch (err) {
       logger.error('Error getting README file size:', err);
     }
-
     const codebaseSize = await getDirectorySize(localDir, readmePath);
+
+    // check for 0/0
+    if(codebaseSize == 0 || readmeSize == 0) {
+      logger.info('Rampup score: 0');
+      return 0;
+    }
+
     var ratio = Math.log(readmeSize + 1) / Math.log(codebaseSize + 1);
     logger.debug('Readme vs codebase ratio: ' + ratio);
+
+    // check for 0 score
+    if(ratio <= 0) {
+      logger.info('Rampup score: 0');
+      return 0;
+    }
+
+    // adjust ratio
+    ratio = 1 + Math.log(ratio);
 
     // remove temp directory
     tempDir.removeCallback();
@@ -427,7 +442,7 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
     // finalize score
     ratio = parseFloat(ratio.toFixed(1));
     logger.info('RampUp raw score: ' + ratio);
-    if(ratio > 1) {
+    if(ratio > 1 || ratio < 0) {
       logger.info('Rampup score: 1');
       return 1;
     }

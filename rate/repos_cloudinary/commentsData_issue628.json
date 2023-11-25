@@ -130,5 +130,49 @@
       "eyes": 0
     },
     "performed_via_github_app": null
+  },
+  {
+    "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/1824353881",
+    "html_url": "https://github.com/cloudinary/cloudinary_npm/issues/628#issuecomment-1824353881",
+    "issue_url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/628",
+    "id": 1824353881,
+    "node_id": "IC_kwDOAEh2wM5svW5Z",
+    "user": {
+      "login": "tommyg-cld",
+      "id": 97883332,
+      "node_id": "U_kgDOBdWUxA",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97883332?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/tommyg-cld",
+      "html_url": "https://github.com/tommyg-cld",
+      "followers_url": "https://api.github.com/users/tommyg-cld/followers",
+      "following_url": "https://api.github.com/users/tommyg-cld/following{/other_user}",
+      "gists_url": "https://api.github.com/users/tommyg-cld/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/tommyg-cld/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/tommyg-cld/subscriptions",
+      "organizations_url": "https://api.github.com/users/tommyg-cld/orgs",
+      "repos_url": "https://api.github.com/users/tommyg-cld/repos",
+      "events_url": "https://api.github.com/users/tommyg-cld/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/tommyg-cld/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "created_at": "2023-11-23T12:31:58Z",
+    "updated_at": "2023-11-23T12:31:58Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "@nk9  upload stream docs can now be found here https://cloudinary.com/documentation/node_image_and_video_upload#node_js_upload_stream\r\n\r\n@raae so if you click `For details and examples, see: file source options.`, it has more info on `Upload data stream` with a link to our node.js SDK implementation as well. \r\n\r\nany questions, let me know.\r\n",
+    "reactions": {
+      "url": "https://api.github.com/repos/cloudinary/cloudinary_npm/issues/comments/1824353881/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "performed_via_github_app": null
   }
 ]
