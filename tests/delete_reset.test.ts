@@ -6,11 +6,16 @@ import { promises as fs } from 'fs';
 jest.useFakeTimers();
 
 // Mocking the filesystem module
-jest.mock('fs', () => ({
-  promises: {
-    rm: jest.fn().mockResolvedValue(null),
-  },
-}));
+jest.mock('fs', () => {
+  return {
+    ...jest.requireActual('fs'), // This will ensure other methods of fs are still the actual implementations
+    existsSync: jest.fn().mockReturnValue(true), // or false depending on what you want to test
+    promises: {
+      ...jest.requireActual('fs').promises,
+      rm: jest.fn().mockResolvedValue(null),
+    },
+  };
+});
 
 // Using the actual db module but mocking the connectToDatabase function
 jest.mock('../rest_api/db', () => ({
