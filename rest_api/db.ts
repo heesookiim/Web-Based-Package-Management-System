@@ -2,7 +2,7 @@
 import * as mysql from 'mysql2/promise';
 import { logger } from '../logger_cfg';
 
-export const dbConfig = {
+const dbConfig = {
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD
@@ -51,6 +51,6 @@ export async function connectToDatabase() {
         return connectionWithDB;
     } catch (error) {
         logger.error('Unable to connect to the database:', error);
-        throw error;
+        return Promise.reject(error);
     }
 }
