@@ -32,11 +32,11 @@ initializeDatabase()
         app.use('/package', post_package);
         app.use('/packages', post_packages);
         
-        app.get('/', (req, res)=> {
+        app.get(['/add'], (req, res)=> {
         res.sendFile(path.join(__dirname, '../web', 'add.html'));
         });
 
-        app.get('/all', (req, res)=> {
+        app.get(['/all', '/home', '/'], (req, res)=> {
             res.sendFile(path.join(__dirname, '../web', 'packages.html'));
         });          
     })

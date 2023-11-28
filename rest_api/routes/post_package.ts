@@ -12,10 +12,8 @@ import { FieldPacket, RowDataPacket } from 'mysql2';
 import * as schema from '../../schema';
 import { connectToDatabase, dbName, tableName } from "../db";
 import { getAllRatings } from "../../rate/analyze"
-import { analyzePackages, analyzePullRequests } from "../../rate/new-metrics"
 import { logger } from "../../logger_cfg";
-import {Package, PackageRating} from "../../schema";
-
+import { PackageRating} from "../../schema";
 
 const router = Router();
 const exec = promisify(execCallback);
@@ -24,16 +22,22 @@ let table = `${dbName}.${tableName}`
 
 router.post('/', async (req: Request, res: Response) => {
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
+    logger.info(`Iniitiating POST request for ${req}`);
 
+    deleteZipFiles('rest_api');
     /** delete 'dump' directory if it exists **/
     await fs.rm('rest_api/dump', { recursive: true, force: true }).catch(err => {
+        logger.debug(`Clearing directory for cloning`);
         if (err.code !== 'ENOENT') {
-            throw err;
+            return res.status(503).json({
+                err: `Unexpected : ${err}`,
+            });
         }
     });
 
     /** checks if only either Content or URL is being passsed when inserting a package **/
     if (!((Content && JSProgram && !URL) || (URL && JSProgram && !Content))) {
+        logger.error(`Failed POST request. Error 400`);
         return res.status(400).json({
             error: "There is missing field(s) in the PackageData or it is formed improperly.",
         });
@@ -44,6 +48,7 @@ router.post('/', async (req: Request, res: Response) => {
     try {
         connection = await connectToDatabase();
     } catch (error) {
+        logger.error(`Failed POST request. Error 503`);
         return res.status(503).json({
             error: `Error connecting to the database: ${error}`,
         });
@@ -52,12 +57,15 @@ router.post('/', async (req: Request, res: Response) => {
     let name: string = '';
     let version: string = '';
     let url: string = '';
+    let id: string = '';
 
     /** download the repo from the link and extract information **/
     if (URL) {
         try {
             await downloadRepo(URL, 'rest_api/dump');
+            logger.debug(`Downloading repository ${URL}`);
         } catch (error) {
+            logger.error(`Failed POST request. Error 503`);
             return res.status(503).json({
                 error: `Invalid GitHub Link. ${error}`,
             });
@@ -65,8 +73,10 @@ router.post('/', async (req: Request, res: Response) => {
 
     } else if (Content) {
         try {
-            let zipPath = await decodeBase64AndExtract(Content, 'rest_api/dump');
+            await decodeBase64AndExtract(Content, 'rest_api/dump');
+            logger.debug(`Extracting Content from request body`);
         } catch (error) {
+            logger.error(`Failed POST request. Error 503`);
             return res.status(503).json({
                 error: `Couldn't read zip file. ${error}`,
             });
@@ -74,66 +84,86 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     try {
+        logger.debug(`Extracting info from package.json`);
         const packageJsonPath = pathModule.join('rest_api/dump', 'package.json')
         const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
         const packageJson = JSON.parse(packageJsonContent);
-        name = packageJson.name;
-        version = packageJson.version;
+
         if (URL) {
             url = URL;
         } else {
             url = getGithubUrl(packageJson.repository.url as string);
         }
+        const pathParts = url.split('/');
+        const nonEmptyParts = pathParts.filter((part: string) => part.trim() !== '');
+        const projectName = nonEmptyParts[nonEmptyParts.length - 1];
+
+        name = packageJson.name;
+        if (!name) {
+            name = projectName;
+        }
+        version = packageJson.version;
+        if (!version) {
+            throw Error(
+                'No version found in the package'
+                );
+        }
+        id = name + "_" + version;
 
     } catch (error) {
+        logger.error(`Failed POST request. Error 503`);
         return res.status(503).json({
-            error: `Failed to open the package.json file and/or package.json doesn't contain name/version. ${error}`,
+            error: `Failed to open the package.json file and/or other error. ${error}`,
         });
     }
 
     /** check if package already exists in the database **/
     let packageExists;
     try {
+        logger.debug(`Checking if package already exists in the database`);
         const [existingRows] = await connection.execute(
             `SELECT * FROM ${table} WHERE name = ? AND version = ?`, [name, version]
             ) as [RowDataPacket[], FieldPacket[]];
         packageExists = existingRows.length > 0;
 
     } catch (error) {
+        logger.error(`Failed POST request. Error 503`);
         return res.status(503).json({
             error: `Error connecting to the database: ${error}`,
         });
     }
 
     if (packageExists) {
+        logger.error(`Failed POST request. Error 409`);
         return res.status(409).json({
             error: "Package exists already."
         });
     }
-
-
-
-    /** fetch metrics
-    // Check the NetScore in the rating
-    if (rating && rating.NetScore !== -1 && rating.NetScore <= 0.5) {
-        return res.status(424).json({
-            error: "Package is not uploaded due to the disqualified rating."
-        });
-    }
-    **/
 
     /** create the zip file **/
     const zipResult = await ZIP('../dump', name, version, 'rest_api', res);
     const { fileContent, outputZipPath }: { fileContent: string, outputZipPath: string } = zipResult;
 
     let packageRating: PackageRating = await getAllRatings(url);
+    console.log('==========================');
+    console.log(`package rating for ${id}`);
     console.log(packageRating);
+
+    // Check the NetScore in the rating
+    if (packageRating && packageRating.NetScore !== -1 && packageRating.NetScore < 0.35) {
+        logger.error(`Failed POST request. Error 424`);
+        return res.status(424).json({
+            error: "Package is not uploaded due to the disqualified rating."
+        });
+    }
+
     /** database entry **/
     let responseData : schema.Package;
     let result;
     try {
-        const [results] = await connection.execute(
-            `INSERT INTO ${table} (Name, Version, URL, JSProgram, Content,
+        logger.info(`Iniitiating Database request`);
+        const results = await connection.execute(
+            `INSERT INTO ${table} (ID, Name, Version, URL, JSProgram, Content,
                 BUS_FACTOR_SCORE,
                 CORRECTNESS_SCORE,
                 RAMP_UP_SCORE,
@@ -142,8 +172,9 @@ router.post('/', async (req: Request, res: Response) => {
                 PINNED_PRACTICE_SCORE,
                 PULL_REQUEST_RATING_SCORE,
                 NET_SCORE
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            , [name,
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            , [id,
+               name,
                version,
                url,
                JSProgram,
@@ -156,31 +187,33 @@ router.post('/', async (req: Request, res: Response) => {
                packageRating.GoodPinningPractice,
                packageRating.PullRequest,
                packageRating.NetScore]) as any;
-
         result = results;
-
     } catch (error) {
-        return res.status(500).json({
+        logger.error(`Failed POST request. Error 503`);
+        return res.status(503).json({
             error: `Failed to insert URL to the database. Please try again later. ${error}`
         });
     }
 
     if (URL) {
         responseData = {
-            metadata: { Name: name, Version: version, ID: result.insertId },
+            metadata: { Name: name, Version: version, ID: id },
             data: { URL, JSProgram }
         };
     } else {
         responseData = {
-            metadata: { Name: name, Version: version, ID: result.insertId },
+            metadata: { Name: name, Version: version, ID: id },
             data: { Content, JSProgram }
         }
     }
 
     /** delete 'dump' directory if it exists **/
-    await fs.rm('rest_api/dump', { recursive: true, force: true }).catch(err => {
-        if (err.code !== 'ENOENT') {
-            throw err;
+    await fs.rm('rest_api/dump', { recursive: true, force: true }).catch(error => {
+        if (error.code !== 'ENOENT') {
+            logger.error(`Failed to delete directory. Error 503`);
+            return res.status(503).json({
+                error: `Failed to delete directory ${error}`
+            });
         }
     });
 
@@ -189,6 +222,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     await connection.end();
+    logger.info(`Completing POST request`);
     return res.status(201).json(responseData);
 });
 
@@ -222,7 +256,8 @@ export async function downloadRepo(url: string, path: string)  {
     return path;
 }
 
-export async function ZIP(sourcePath: string, name: string, version: string, filePath: string, res: Response) {
+export async function ZIP(sourcePath: string, name: string, version: string, filePath: string, res?: Response) {
+
     const sourceDirectory = pathModule.join(__dirname, sourcePath);
     const zipFileName = `${name} [${version}].zip`;
     const outputZipPath: string = `${filePath}/${zipFileName}`;
@@ -244,9 +279,11 @@ export async function ZIP(sourcePath: string, name: string, version: string, fil
     });
 
     archive.on('error', (error: string) => {
-        return res.status(503).json({
-            error: `Error creating the zip file: ${error}`,
-        });
+        if (res) {
+            return res.status(503).json({
+                error: `Error creating the zip file: ${error}`,
+            });
+        }
     });
 
     archive.finalize();
@@ -257,17 +294,12 @@ export async function ZIP(sourcePath: string, name: string, version: string, fil
 
 async function decodeBase64AndExtract(base64String: string, outputPath: string) {
     const cleanedBase64String = base64String.replace(/\s/g, '');
-
-    // Create an instance of AdmZip using the base64 data
     const zip = new AdmZip(Buffer.from(cleanedBase64String, 'base64'));
 
     // Extract the contents of the zip file directly to the output path
     zip.extractAllTo(outputPath, /*overwrite*/ true);
 
-    // Get the list of entries in the output path
     const outputEntries = fileSystem.readdirSync(outputPath);
-
-    // Determine the source and destination paths
     const sourcePath = pathModule.join(outputPath, outputEntries[0]);
     const destinationPath = pathModule.join(outputPath, 'contents');
 
@@ -284,8 +316,38 @@ async function decodeBase64AndExtract(base64String: string, outputPath: string) 
 
     // Remove the intermediate 'contents' folder
     await fs.rmdir(destinationPath);
+}
 
-    return outputPath; // Return the path of the final extracted contents in 'rest_api/dump'
+function deleteZipFiles(directoryPath: string): void {
+    fileSystem.readdir(directoryPath, (err, files) => {
+        if (err) {
+            console.error('Error reading directory:', err);
+            throw err;
+        }
+
+        // Filter the files to only include zip files
+        const zipFiles = files.filter((file) => file.endsWith('.zip'));
+
+        // Check if there are any zip files
+        if (zipFiles.length === 0) {
+            console.log('No zip files found in the specified directory.');
+//            throw err;
+        }
+
+        // Delete each zip file
+        zipFiles.forEach((file) => {
+            const filePath = pathModule.join(directoryPath, file);
+
+            fileSystem.unlink(filePath, (unlinkErr) => {
+                if (unlinkErr) {
+                    console.error('Error deleting file:', filePath, unlinkErr);
+//                    throw err;
+                } else {
+                    console.log('Deleted file:', filePath);
+                }
+            });
+        });
+    });
 }
 
 export default router;

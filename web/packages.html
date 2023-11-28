@@ -1,57 +1,102 @@
 <!-- public/packages.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
-    <!-- Add your HTML head content here -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <!-- Bootstrap CSS -->
+    <style>
+        /* Add more specificity to override Bootstrap styles */
+        nav .container-fluid .form-control.custom-search-input {
+            width: 350px; /* Adjust the width as needed */
+        }
+    </style>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
-
 <body>
     <nav class="navbar bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand">A Trustworthy Module Registry</a>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="/all">Module Registry</a>
+
+            <div class="d-flex align-items-center">
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2 custom-search-input" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+
+            <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
         </div>
     </nav>
 
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <table class="table table-striped">
+                <table id="packagesTable" class="table table-striped">
                     <thead>
                         <tr>
                             <th>Package Name</th>
-                            <th>Metrics</th>
+                            <th>Version</th>
                             <th>Links</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Package 1</td>
-                            <td>0.5</td>
-                            <td><a href="/package/1">View</a></td>
-                        </tr>
-                        <tr>
-                            <td>Package 2</td>
-                            <td>0.5</td>
-                            <td><a href="/package/2">View</a></td>
-                        </tr>
-                        
-                        <tr>
-                            <td>Package 3</td>
-                            <td>0.5</td>
-                            <td><a href="/package/3">View</a></td>
-                        </tr>
+                        <!-- Dynamic content will be added here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('http://localhost:3000/packages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([{
+                        "Name": "*",
+                        "Version": "0.0.0-99.99.99"
+                    }]),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.status} - ${response.statusText}`);
+                }
+
+                const packages = await response.json();
+                renderPackagesTable(packages);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+
+        function renderPackagesTable(packages) {
+            const tableBody = document.querySelector('#packagesTable tbody');
+
+            // Clear existing rows
+            tableBody.innerHTML = '';
+
+            // Populate table with received data
+            packages.forEach((pkg) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pkg.Name}</td>
+                    <td>${pkg.Version}</td>
+                    <td><a href="/package/${pkg.ID}">View</a></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+
+
+
 </body>
 </html>
