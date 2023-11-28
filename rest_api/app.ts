@@ -24,8 +24,8 @@ initializeDatabase()
     .then(() => {
         logger.info('Starting the server');
         server = app.listen(PORT, () => {
-        logger.info(`API running on port ${PORT}`);
-        console.log('API running on port ${PORT}');
+        logger.info('API running on port ' + PORT);
+        // console.log('API running on port ' + PORT);
         });
         
         // Setup the routes
@@ -38,7 +38,7 @@ initializeDatabase()
 
         app.get('/all', (req, res)=> {
             res.sendFile(path.join(__dirname, '../web', 'packages.html'));
-          });          
+        });          
     })
 
 export { server, app };

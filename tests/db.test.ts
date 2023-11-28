@@ -1,5 +1,4 @@
 // Integration testing for database and REST APIs
-// Unit testing and Integration testing for database
 import * as mysql from 'mysql2/promise';
 import * as db from '../rest_api/db';
 

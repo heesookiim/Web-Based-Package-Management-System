@@ -2,7 +2,7 @@
 import * as mysql from 'mysql2/promise';
 import { logger } from '../logger_cfg';
 
-export const dbConfig = {
+const dbConfig = {
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD
@@ -15,7 +15,7 @@ export const tableName = 'package';
 export const tableCreationQuery = 'CREATE TABLE IF NOT EXISTS ' + tableName + ' (' +
     'Name VARCHAR(255), ' +
     'Version VARCHAR(255), ' +
-    'ID INT AUTO_INCREMENT PRIMARY KEY, ' +
+    'ID VARCHAR(255) PRIMARY KEY, ' +
     'URL TEXT, ' +
     'Content LONGTEXT, ' +
     'JSProgram MEDIUMTEXT, ' +
@@ -32,7 +32,6 @@ export async function initializeDatabase() {
         await connection.query('USE ' + dbName);
         await connection.query(tableCreationQuery);
         await connection.query(`SET GLOBAL max_allowed_packet = 524288000;`);
-        await connection.query('ALTER TABLE ' + tableName + ' AUTO_INCREMENT = 1');
     } catch (error) {
         logger.error('Unable to initialize the database:', error);
         throw error;
@@ -51,6 +50,6 @@ export async function connectToDatabase() {
         return connectionWithDB;
     } catch (error) {
         logger.error('Unable to connect to the database:', error);
-        throw error;
+        return Promise.reject(error);
     }
 }
