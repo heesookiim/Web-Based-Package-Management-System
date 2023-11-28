@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import * as express from 'express';
 import post_package from './routes/post_package';
 import post_packages from './routes/post_packages';
+import delete_reset from './routes/delete_reset';
 import * as path from 'path';
 import { initializeDatabase } from './db';
 import * as bodyParser from 'body-parser';
@@ -31,6 +32,7 @@ initializeDatabase()
         // Setup the routes
         app.use('/package', post_package);
         app.use('/packages', post_packages);
+        app.use('/reset', delete_reset);
         
         app.get(['/add'], (req, res)=> {
         res.sendFile(path.join(__dirname, '../web', 'add.html'));
