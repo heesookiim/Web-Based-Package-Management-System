@@ -1,38 +1,121 @@
-// Arryan
-// Unit testing for POST /package
-import { downloadRepo } from '../rest_api/routes/post_package';
-import { promises as fs, rm } from 'fs';
+import request = require('supertest');
+import { app, server } from '../rest_api/app';
+import { initializeDatabase, connectToDatabase } from '../rest_api/db';
+import { PackageData } from '../schema';
 
-const testPath = 'tests/dump';
+jest.mock('../rest_api/db', () => ({
+    initializeDatabase: jest.fn().mockResolvedValue(null),
+    connectToDatabase: jest.fn().mockResolvedValue({
+        execute: jest.fn().mockResolvedValue(null),
+        end: jest.fn().mockResolvedValue(null),
+    }),
+}));
 
-afterAll(() => {
-    fs.rm(testPath, { recursive: true, force: true }).catch(err => {
-        if (err.code !== 'ENOENT') {
-            throw err;
-        }
-    });
+beforeAll(async () => {
+    await initializeDatabase();
 });
 
 
-describe('downloadRepo function', () => {
-    it('Clones 1 repository and returns the path', async () => {
-        const testUrl = 'https://github.com/WebReflection/flatted';
-        const result = await downloadRepo(testUrl, testPath);
-        expect(result).toBe(testPath);
+afterEach(async () => {
+    jest.useRealTimers();
+});
+
+afterAll(async () => {
+    await new Promise<void>((resolve, reject) => {
+        server.close((err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+});
+
+describe('/POST package', () => {
+    jest.setTimeout(40000);
+
+    it('201 Success.', async () => {
+        (connectToDatabase as jest.Mock).mockImplementationOnce(async () => ({
+            execute: jest.fn().mockResolvedValueOnce([
+                [], []]),
+            end: jest.fn(),
+        }));
+
+        const res = await request(app)
+            .post('/package')
+            .send(
+                {
+                    URL: "https://github.com/WebReflection/flatted",
+                    JSProgram: "npm i flatted"
+                }
+                );
+
+        expect(res.status).toBe(201);
+        expect(res.body).toEqual(
+            {
+                "metadata": {
+                    "Name": "flatted",
+                    "Version": "3.2.9",
+                    "ID": "flatted_3.2.9"
+                },
+                "data": {
+                    "URL": "https://github.com/WebReflection/flatted",
+                    "JSProgram": "npm i flatted"
+                }
+            },
+            );
+        expect(connectToDatabase).toHaveBeenCalled();
     });
 
-    it('Clone 3 repositories and return the paths', async () => {
-        const testUrl1 = 'https://github.com/WebReflection/flatted';
-        const result1 = await downloadRepo(testUrl1, testPath);
-        expect(result1).toBe(testPath);
+    it('400 There is missing field(s)', async () => {
+        (connectToDatabase as jest.Mock).mockImplementationOnce(async () => ({
+            execute: jest.fn().mockResolvedValueOnce([
+                [], []]),
+            end: jest.fn(),
+        }));
 
-        const testUrl2 = 'https://github.com/lune-climate/ts-results-es';
-        const result2 = await downloadRepo(testUrl2, testPath);
-        expect(result2).toBe(testPath);
+        const res = await request(app)
+            .post('/package')
+            .send(
+                {
+                    URL: "https://github.com/WebReflection/flatted",
+                    //                    JSProgram: "npm i flatted"
+                }
+                );
 
-        const testUrl3 = 'https://github.com/browserify/randombytes';
-        const result3 = await downloadRepo(testUrl3, testPath);
-        expect(result3).toBe(testPath);
+        expect(res.status).toBe(400);
+        expect(res.body).toStrictEqual(
+            {
+                "error": "There is missing field(s) in the PackageData or it is formed improperly."
+            },
+            );
+    });
+
+    it('409 Package exists already.', async () => {
+        (connectToDatabase as jest.Mock).mockImplementationOnce(async () => ({
+            execute: jest.fn().mockResolvedValueOnce([
+                [{ Name: 'flatted', Version: '3.2.9', ID: 'flatted_3.2.9' }], []]),
+            end: jest.fn(),
+        }));
+
+
+        const res = await request(app)
+            .post('/package')
+            .send(
+                {
+                    URL: "https://github.com/WebReflection/flatted",
+                    JSProgram: "npm i flatted"
+                }
+                );
+
+        expect(res.status).toBe(409);
+        expect(res.body).toBe(
+            {
+                "error": "Package exists already."
+            }
+            );
+        expect(connectToDatabase).toHaveBeenCalled();
     });
 
 
