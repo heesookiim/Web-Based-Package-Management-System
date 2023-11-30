@@ -4,6 +4,8 @@ import * as express from 'express';
 import post_package from './routes/post_package';
 import post_packages from './routes/post_packages';
 import delete_reset from './routes/delete_reset';
+import get_package_id from './routes/get_package_id';
+import get_package_id_rate from './routes/get_package_id_rate';
 import * as path from 'path';
 import { initializeDatabase } from './db';
 import * as bodyParser from 'body-parser';
@@ -29,7 +31,10 @@ initializeDatabase()
         // console.log('API running on port ' + PORT);
         });
         
-        // Setup the routes
+        // Setup the routes, order matters
+        // more specific should come before more general
+        app.use('/package/:id/rate', get_package_id_rate);
+        app.use('/package/:id', get_package_id);
         app.use('/package', post_package);
         app.use('/packages', post_packages);
         app.use('/reset', delete_reset);

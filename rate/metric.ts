@@ -440,9 +440,6 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
       return 0;
     }
 
-    // adjust ratio
-    ratio = 1 + Math.log(ratio);
-
     // remove temp directory
     tempDir.removeCallback();
 
