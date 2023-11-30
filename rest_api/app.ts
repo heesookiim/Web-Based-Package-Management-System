@@ -33,8 +33,8 @@ initializeDatabase()
         
         // Setup the routes, order matters
         // more specific should come before more general
-        app.use('/package/:id/rate', get_package_id_rate);
-        app.use('/package/:id', get_package_id);
+        app.use('/package/', get_package_id_rate);
+        app.use('/package/', get_package_id);
         app.use('/package', post_package);
         app.use('/packages', post_packages);
         app.use('/reset', delete_reset);

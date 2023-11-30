@@ -43,22 +43,22 @@ router.get('/:id', async (req: Request, res: Response) => {
 
     // return based on success in finding package
     if(packageFound) {
-        logger.info('Package successfully found: ' + packageFound[0]);
+        logger.info('Package successfully found: ' + packageFound[0][0]);
 
         // fill in variables with data to be returned
         let packageMetadata: schema.PackageMetadata = {
-            Name: packageFound[0].Name,
-            Version: packageFound[0].Version,
-            ID: packageFound[0].ID
+            Name: packageFound[0][0].Name,
+            Version: packageFound[0][0].Version,
+            ID: packageFound[0][0].ID
         };
         let packageData: schema.PackageData = {
-            JSProgram: packageFound[0].JSProgram
+            JSProgram: packageFound[0][0].JSProgram
         };
-        if(packageFound[0].Content) {
-            packageData.Content = packageFound[0].Content;
+        if(packageFound[0][0].Content) {
+            packageData.Content = packageFound[0][0].Content;
         }
-        if(packageFound[0].URL) {
-            packageData.URL = packageFound[0].URL;
+        if(packageFound[0][0].URL) {
+            packageData.URL = packageFound[0][0].URL;
         }
         const data: schema.Package = {  // data and metadata for package
             metadata: packageMetadata,
