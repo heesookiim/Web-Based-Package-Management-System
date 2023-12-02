@@ -41,7 +41,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     }
 
     // return based on success in finding package
-    if(packageFound) {
+    if(packageFound.length > 0) {
         logger.info('Package successfully found: ' + packageFound[0][0]);
 
         // fill in variables with data to be returned
@@ -64,7 +64,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             data: packageData
         }
 
-        logger.info(`returning status 200: ${data}`);
+        logger.info(`returning status 200: ` + JSON.stringify(data));
         return res.status(200).json(data);
     } else {
         logger.info('error: package does not exist')

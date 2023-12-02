@@ -35,7 +35,7 @@ router.get('/:id/rate', async (req: Request, res: Response) => {
         logger.debug('Checking if package exists in database');
         packageFound = await connection.execute(
             `SELECT * FROM ${table} WHERE ID = ?`, [packageId]);
-
+    
     } catch (error) {
         logger.error(`Failed databse query: ${error}`);
         return res.status(503).json({
@@ -44,7 +44,7 @@ router.get('/:id/rate', async (req: Request, res: Response) => {
     }
 
     // return based on success in finding package
-    if(packageFound) {
+    if(packageFound.length > 0) {
         logger.info('Package successfully found: ' + packageFound[0][0]);
 
         // fill in variables with data to be returned
@@ -59,7 +59,7 @@ router.get('/:id/rate', async (req: Request, res: Response) => {
             NetScore: packageFound[0][0].NET_SCORE
         };
 
-        logger.info(`returning status 200: ${packageRating}`);
+        logger.info('returning status 200: ' + JSON.stringify(packageRating));
         return res.status(200).json(packageRating);
     } else {
         logger.error('error: package does not exist')
