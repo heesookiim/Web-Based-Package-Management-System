@@ -25,7 +25,7 @@ describe('Database Initialization', () => {
         expect(mysql.createConnection).toHaveBeenCalled();
         expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE DATABASE IF NOT EXISTS 461ProjectPhase2'));
         expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('USE 461ProjectPhase2'));
-        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS package (Name VARCHAR(255), Version VARCHAR(255), ID INT AUTO_INCREMENT PRIMARY KEY, URL TEXT, Content LONGTEXT, JSProgram MEDIUMTEXT, NET_SCORE FLOAT, RAMP_UP_SCORE FLOAT, CORRECTNESS_SCORE FLOAT, BUS_FACTOR_SCORE FLOAT, RESPONSIVE_MAINTAINER_SCORE FLOAT, LICENSE_SCORE INT, PINNED_PRACTICE_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT);'));
+        expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS package (Name VARCHAR(255), Version VARCHAR(255), ID VARCHAR(255) PRIMARY KEY, URL TEXT, Content LONGTEXT, JSProgram MEDIUMTEXT, NET_SCORE FLOAT, RAMP_UP_SCORE FLOAT, CORRECTNESS_SCORE FLOAT, BUS_FACTOR_SCORE FLOAT, RESPONSIVE_MAINTAINER_SCORE FLOAT, LICENSE_SCORE INT, PINNED_PRACTICE_SCORE FLOAT, PULL_REQUEST_RATING_SCORE FLOAT);'));
         expect(mockEnd).toHaveBeenCalled();
     });
 

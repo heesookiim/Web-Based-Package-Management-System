@@ -8,6 +8,7 @@ import get_package_id from './routes/get_package_id';
 import get_package_id_rate from './routes/get_package_id_rate';
 import delete_package_id from './routes/delete_package_id'
 import delete_package_name from './routes/delete_package_name'
+import post_package_byregex from './routes/post_package_byregex';
 import * as path from 'path';
 import { initializeDatabase } from './db';
 import * as bodyParser from 'body-parser';
@@ -35,12 +36,13 @@ initializeDatabase()
         
         // Setup the routes, order matters
         // more specific should come before more general
-        app.use('/package/', get_package_id_rate);
-        app.use('/package/', get_package_id);
-        app.use('package/', delete_package_id)
-        app.use('package/', delete_package_name);
+        app.use('/package', get_package_id_rate);
+        app.use('/package', get_package_id);
+        app.use('/package', delete_package_id);
+        app.use('/package', delete_package_name);
         app.use('/package', post_package);
         app.use('/packages', post_packages);
+        app.use('/package', post_package_byregex);
         app.use('/reset', delete_reset);
         
         app.get(['/add'], (req, res)=> {
