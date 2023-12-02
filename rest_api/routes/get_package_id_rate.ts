@@ -44,7 +44,7 @@ router.get('/:id/rate', async (req: Request, res: Response) => {
     }
 
     // return based on success in finding package
-    if(packageFound.length > 0) {
+    if(packageFound[0][0] != undefined) {
         logger.info('Package successfully found: ' + packageFound[0][0]);
 
         // fill in variables with data to be returned

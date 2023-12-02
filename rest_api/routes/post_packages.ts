@@ -36,18 +36,18 @@ router.post('/', async (req: Request, res: Response) => {
 
         logger.info('Retrieving packages that exactly match with the query');
         if (Version.includes('-')) {
-            // Bounded range
+            logger.debug('Received version: ' + 'Bounded range');
             const [start, end] = Version.split('-');
             versionConditions.push('Version BETWEEN ? AND ?');
             queryParam.push(start, end);
         } else if (Version.startsWith('^') || Version.startsWith('~')) {
-            // Carat or Tilde
+            logger.debug('Received version: ' + 'Caret or Tilde');
             const baseVersion = Version.substring(1);
             const upperBound = calcUpperBound(baseVersion, Version[0]);
             versionConditions.push('Version >= ? AND Version < ?');
             queryParam.push(baseVersion, upperBound);
         } else {
-            // Exact
+            logger.debug('Received version: ' + 'Exact');
             versionConditions.push('Version = ?');
             queryParam.push(Version);
         }
@@ -60,6 +60,11 @@ router.post('/', async (req: Request, res: Response) => {
             query += 'WHERE ' + versionConditions.join(' AND ');
         }
 
+        query += ' LIMIT ? OFFSET ?';
+        queryParam.push(limit.toString(), offset.toString());
+
+        logger.debug('Sending the following query to database: ' + query);
+        logger.debug('Sending the following query parameters to database: ' + queryParam);
         const [results] = await connection.execute(query, queryParam) as [RowDataPacket[], FieldPacket[]];
 
         const resultsLength = results.length
@@ -89,18 +94,19 @@ router.post('/', async (req: Request, res: Response) => {
 function calcUpperBound(version: string, type: string): string {
     const parts = version.split('.');
     if (parts.length === 3) {
-        const [major, minor, patch] = parts;
+        const [major, minor, patch] = parts.map(Number);
         if (type === '^') {
-            return `${Number(major) + 1}.0.0`;
-        } 
-        else if (type === '~') {
-            return `${major}.${Number(minor) + 1}.0`;
+            return `${major + 1}.0.0`;
+        } else if (type === '~') {
+            // Include all patch versions within the specified minor version
+            return `${major}.${minor + 1}.0`;
+        } else {
+            logger.error('Invalid version type: ' + type);
         }
-        else {
-            logger.error('There is no such type');
-        }
+    } else {
+        logger.error('Invalid version format: ' + version);
     }
-    return version;
+    return version; // Return the original version if unable to calculate the upper bound
 }
 
 export default router;
