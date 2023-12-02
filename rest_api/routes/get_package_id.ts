@@ -13,7 +13,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     // make sure ID is present in request
     if(!packageId) {
         logger.info('Missing/invalid package ID, returning status 400')
-        return res.status(400).json({error: 'Missing field or ID improperly formed'});
+        return res.status(400).json({error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});
     }
 
     // connect to database
@@ -21,21 +21,20 @@ router.get('/:id', async (req: Request, res: Response) => {
     try {
         connection = await connectToDatabase();
     } catch (error) {
-        logger.error(`Failed to connect with database. Error 503`);
+        logger.error(`Failed to connect with database. Error 503: ${error}`);
         return res.status(503).json({error: `Error connecting to the database: ${error}`});
     }
     logger.debug('Successfully connected to database');
 
     // query database
-    // not sure how to set up query to return package data
     let packageFound: any;
     try {
         logger.debug('Checking if package exists in database');
         packageFound = await connection.execute(
-            `SELECT * FROM ${table} WHERE id = ?`, [packageId]);
+            `SELECT * FROM ${table} WHERE ID = ?`, [packageId]);
 
     } catch (error) {
-        logger.error('Failed databse query');
+        logger.error(`Failed databse query: ${error}`);
         return res.status(503).json({
             error: `Error connecting to the database: ${error}`,
         });
@@ -60,7 +59,7 @@ router.get('/:id', async (req: Request, res: Response) => {
         if(packageFound[0][0].URL) {
             packageData.URL = packageFound[0][0].URL;
         }
-        const data: schema.Package = {  // data and metadata for package
+        const data: schema.Package = {  // data and metadata for package, used for response
             metadata: packageMetadata,
             data: packageData
         }
@@ -68,8 +67,8 @@ router.get('/:id', async (req: Request, res: Response) => {
         logger.info(`returning status 200: ${data}`);
         return res.status(200).json(data);
     } else {
-        logger.error('error: package does not exist')
-        return res.status(404).json({error: 'Package does not exist'});
+        logger.info('error: package does not exist')
+        return res.status(404).json({error: 'Package does not exist.'});
     }
 });
 

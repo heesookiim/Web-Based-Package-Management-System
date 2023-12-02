@@ -6,6 +6,8 @@ import post_packages from './routes/post_packages';
 import delete_reset from './routes/delete_reset';
 import get_package_id from './routes/get_package_id';
 import get_package_id_rate from './routes/get_package_id_rate';
+import delete_package_id from './routes/delete_package_id'
+import delete_package_name from './routes/delete_package_name'
 import * as path from 'path';
 import { initializeDatabase } from './db';
 import * as bodyParser from 'body-parser';
@@ -35,6 +37,8 @@ initializeDatabase()
         // more specific should come before more general
         app.use('/package/', get_package_id_rate);
         app.use('/package/', get_package_id);
+        app.use('package/', delete_package_id)
+        app.use('package/', delete_package_name);
         app.use('/package', post_package);
         app.use('/packages', post_packages);
         app.use('/reset', delete_reset);
