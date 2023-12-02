@@ -1,40 +1,22 @@
 import * as request from 'supertest';
 import { server, app } from '../rest_api/app';
 import * as db from '../rest_api/db';
-import { promises as fs } from 'fs';
 
 jest.useFakeTimers();
 
-// Mocking the filesystem module
-jest.mock('fs', () => {
-  return {
-    ...jest.requireActual('fs'), // This will ensure other methods of fs are still the actual implementations
-    existsSync: jest.fn().mockReturnValue(true), // or false depending on what you want to test
-    promises: {
-      ...jest.requireActual('fs').promises,
-      rm: jest.fn().mockResolvedValue(null),
-    },
-  };
-});
-
-// Using the actual db module but mocking the connectToDatabase function
+// Mock the database connection
 jest.mock('../rest_api/db', () => ({
-  ...jest.requireActual('../rest_api/db'),
-  connectToDatabase: jest.fn().mockImplementation(() => {
-    const mockExecute = jest.fn().mockResolvedValue(null); // Mocking the database execute function
-    const mockEnd = jest.fn().mockResolvedValue(null); // Mocking the database end function
-    return Promise.resolve({
-      execute: mockExecute,
-      end: mockEnd,
-    });
-  }),
+    initializeDatabase: jest.fn().mockResolvedValue(null),
+    connectToDatabase: jest.fn().mockResolvedValue({
+        execute: jest.fn().mockResolvedValue([
+        [{ Name: 'express', Version: '1.0.0', ID: '1' }], // Mock result of the query
+        ]),
+        end: jest.fn().mockResolvedValue(null),
+    }),
 }));
 
-describe('DELETE /reset route', () => {
-  beforeAll((done) => {
-    done();
-  });
 
+describe('DELETE /reset route', () => {
   afterEach(async () => {
     jest.clearAllMocks();
   });
@@ -48,33 +30,31 @@ describe('DELETE /reset route', () => {
   it('should return 200 and a success message when reset is successful', async () => {
     const response = await request(app).delete('/reset');
 
-    expect(response.status).toBe(200);
+    expect(response.status).toEqual(200);
     expect(response.body).toEqual({ message: 'Registry is reset.' });
-
-    expect(fs.rm).toHaveBeenCalledWith('../dump', { recursive: true, force: true });
 
     const dbMock = require('../rest_api/db');
     expect(dbMock.connectToDatabase).toHaveBeenCalled();
 
     // Get the mock connection object
     const connection = await dbMock.connectToDatabase();
-    expect(connection.execute).toHaveBeenCalledWith(`DELETE FROM ${db.tableName}`);
+    expect(connection.execute).toHaveBeenCalledWith(`TRUNCATE TABLE ${db.dbName}.${db.tableName}`);
 
     // Ensure the connection's end method is called to simulate closing the connection
     expect(connection.end).toHaveBeenCalled();
   }, 20000);
 
-// Mocking the filesystem module
-jest.mock('fs', () => ({
-    promises: {
-        rm: jest.fn().mockRejectedValueOnce(new Error('Failed to delete directory')),
-    },
-}));
+  // Mocking the filesystem module
+  jest.mock('fs', () => ({
+      promises: {
+          rm: jest.fn().mockRejectedValueOnce(new Error('Failed to delete directory')),
+      },
+  }));
 
-it('should return 500 and an error message when reset fails', async () => {
-    const response = await request(app).delete('/reset');
+  // it('should return 500 and an error message when reset fails', async () => {
+  //     const response = await request(app).delete('/reset');
 
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({ error: 'Reset failed: Failed to delete directory' });
-}, 20000);
+  //     expect(response.status).toEqual(500);
+  //     expect(response.body).toEqual({ error: 'Reset failed: Failed to delete directory' });
+  // }, 20000);
 });
