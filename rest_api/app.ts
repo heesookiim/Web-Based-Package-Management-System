@@ -6,8 +6,9 @@ import post_packages from './routes/post_packages';
 import delete_reset from './routes/delete_reset';
 import get_package_id from './routes/get_package_id';
 import get_package_id_rate from './routes/get_package_id_rate';
-import delete_package_id from './routes/delete_package_id'
-import delete_package_name from './routes/delete_package_name'
+import delete_package_id from './routes/delete_package_id';
+import delete_package_name from './routes/delete_package_name';
+import put_package_id from './routes/put_package_id';
 import post_package_byregex from './routes/post_package_byregex';
 import * as path from 'path';
 import { initializeDatabase } from './db';
@@ -44,6 +45,7 @@ initializeDatabase()
         app.use('/packages', post_packages);
         app.use('/package', post_package_byregex);
         app.use('/reset', delete_reset);
+        app.use('/package', put_package_id);
         
         app.get(['/add'], (req, res)=> {
         res.sendFile(path.join(__dirname, '../web', 'add.html'));
