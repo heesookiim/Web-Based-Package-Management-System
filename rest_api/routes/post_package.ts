@@ -40,7 +40,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (!((Content && JSProgram && !URL) || (URL && JSProgram && !Content))) {
         logger.error(`Failed POST request. Error 400`);
         return res.status(400).json({
-            error: "There is missing field(s) in the PackageData or it is formed improperly.",
+            error: "There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.",
         });
     }
 
@@ -164,7 +164,9 @@ router.post('/', async (req: Request, res: Response) => {
     let packageRating: PackageRating = await getAllRatings(url);
 
     // Check the NetScore in the rating
-    if (packageRating && packageRating.NetScore !== -1 && packageRating.NetScore < 0.5) {
+    //if (packageRating && packageRating.NetScore !== -1 && packageRating.NetScore < 0.5) {
+    if(packageRating && (packageRating.NetScore < 0.5 || packageRating.BusFactor < 0.5 || packageRating.Correctness < 0.5 || 
+        packageRating.RampUp < 0.5 || packageRating.ResponsiveMaintainer < 0.5 || packageRating.LicenseScore < 0.5)) {
         logger.error(`Failed POST request. Error 424`);
         return res.status(424).json({
             error: "Package is not uploaded due to the disqualified rating."

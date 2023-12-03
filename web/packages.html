@@ -83,7 +83,8 @@
                 try {
                     // Reset button style
                     resetButton.style.background = '';
-                    const resetResponse = await fetch(`http://localhost:3000/reset`, {
+                    //const resetResponse = await fetch(`http://localhost:3000/reset`, {    
+                    const resetResponse = await fetch(`http://3.139.239.92:5001/reset`, {
                         method: 'DELETE',
                     });
 
@@ -134,7 +135,8 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:3000/package/byRegex`, {
+                //const response = await fetch(`http://localhost:3000/package/byRegex`, {
+                const response = await fetch(`http://3.139.239.92:5001//package/byRegex`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -161,7 +163,8 @@
 <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch(`http://localhost:3000/packages`, {
+                //const response = await fetch(`http://localhost:3000/packages`, {
+                const response = await fetch(`http://3.139.239.92:5001/packages`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -31,7 +31,7 @@ export async function initializeDatabase() {
         await connection.query('CREATE DATABASE IF NOT EXISTS ' + dbName);
         await connection.query('USE ' + dbName);
         await connection.query(tableCreationQuery);
-        await connection.query(`SET GLOBAL max_allowed_packet = 524288000;`);
+        //await connection.query(`SET GLOBAL max_allowed_packet = 524288000;`);     // set in DB configuration on EC2
     } catch (error) {
         logger.error('Unable to initialize the database:', error);
         throw error;

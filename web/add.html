@@ -23,12 +23,12 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <a class="navbar-brand" href="/all">All Packages</a>
 
-            <div class="d-flex align-items-center">
+            <!--div class="d-flex align-items-center">
                 <form class="d-flex" role="search">
                     <input class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
-            </div>
+            </div-->
 
             <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
         </div>
@@ -161,7 +161,8 @@
 
             if (isUrlSelected) {
 
-                const response = await axios.post('http://localhost:3000/package', {
+                //const response = await axios.post('http://localhost:3000/package', {
+                const response = await axios.post('http://3.139.239.92:5001/package', {
                     URL: url,
                     JSProgram: jsProgram
                 });
@@ -180,7 +181,8 @@
                         // Read the file as a base64 string
                         const base64Content = await readFileAsBase64(file);
                         // Make the post request
-                        await axios.post('http://localhost:3000/package', {
+                        //await axios.post('http://localhost:3000/package', {
+                        await axios.post('http://http://3.139.239.92:5001/package', {
                             Content: base64Content,
                             JSProgram: jsProgram
                         });

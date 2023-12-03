@@ -15,7 +15,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     if (!Array.isArray(package_queries) || package_queries.length < 1 || Object.keys(package_queries[0]).length === 0) {
         logger.error("There is missing field(s) in the PackageQuery or it is formed improperly");
-        return res.status(400).json( { error: 'There is missing field(s) in the PackageQuery or it is formed improperly'});
+        return res.status(400).json( { error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});
     }
 
     let connection;

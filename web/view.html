@@ -122,14 +122,16 @@
             
             const packageId = window.location.search.split('=')[1];
             
-            const response = await axios.get(`http://localhost:3000/package/${packageId}`);
+            //const response = await axios.get(`http://localhost:3000/package/${packageId}`);
+            const response = await axios.get(`http://3.139.239.92:5001/package/${packageId}`);
             if (!response.data) {
                 throw new Error('Package details not found');
             }
             const packageDetails = response.data;
             
             
-            const ratingResponse = await axios.get(`http://localhost:3000/package/${packageId}/rate`);
+            //const ratingResponse = await axios.get(`http://localhost:3000/package/${packageId}/rate`);\
+            const ratingResponse = await axios.get(`http://3.139.239.92:5001/${packageId}/rate`);
             if (!ratingResponse.data) {
                 throw new Error('Package ratings not found');
             }
