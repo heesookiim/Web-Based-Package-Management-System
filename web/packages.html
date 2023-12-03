@@ -11,9 +11,13 @@
         nav .container-fluid .form-control.custom-search-input {
             width: 350px; /* Adjust the width as needed */
         }
-    </style>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        .navbar {
+        margin-bottom: 20px; /* Adjust the margin as needed */
+        }
+    </style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.18.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
 <body>
     <nav class="navbar bg-body-tertiary">
@@ -21,13 +25,13 @@
             <a class="navbar-brand" href="/all">A Trustworthy Module Registry</a>
 
             <div class="d-flex align-items-center">
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
+                <form id="searchForm" class="d-flex" role="search">
+                    <input id="searchInput" class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
             </div>
             <div class="d-flex align-items-center">
-        <button id="resetButton" class="btn btn-danger ms-2">Reset Registry</button>
+        <button id="resetButton" class="btn btn-danger ms-2">Reset (Hold)</button>
             <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
             </div>
         </div>
@@ -41,7 +45,9 @@
                         <tr>
                             <th>Package Name</th>
                             <th>Version</th>
-                            <th>Links</th>
+                            <th>Actions</th>
+                            <!--<th>View</th>-->
+                            <!--<th>Actions</th>-->
                         </tr>
                     </thead>
                     <tbody>
@@ -56,52 +62,98 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const resetButton = document.getElementById('resetButton');
-        let isHeld = false;
-        let progress = 0;
+    const resetButton = document.getElementById('resetButton');
+    let isHeld = false;
+    let progress = 0;
 
-        resetButton.addEventListener('mousedown', () => {
-            isHeld = true;
+    resetButton.addEventListener('mousedown', () => {
+        isHeld = true;
 
-            const interval = setInterval(() => {
-                if (isHeld && progress < 100) {
-                    progress += 1;
-                    resetButton.style.background = `linear-gradient(90deg, #dc3545 ${progress}%, #9c2d38 ${progress}%)`;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 12.5);
-
-            const timeout = setTimeout(async () => {
-                if (isHeld) {
-                    try {
-                        // Reset button style
-                        resetButton.style.background = '';
-
-                        const resetResponse = await fetch('http://localhost:3000/reset', {
-                            method: 'DELETE',
-                        });
-
-                        if (!resetResponse.ok) {
-                            throw new Error(`Failed to reset registry: ${resetResponse.status} - ${resetResponse.statusText}`);
-                        }
-
-                        // Reload the entire page after resetting
-                        location.reload();
-                    } catch (error) {
-                        console.error('Error resetting registry:', error);
-                    }
-                }
-            }, 1250); // 3000 milliseconds (3 seconds)
-
-            // Clear the timeout if the mouse is released before 3 seconds
-            resetButton.addEventListener('mouseup', () => {
-                isHeld = false;
+        const interval = setInterval(() => {
+            if (isHeld && progress < 100) {
+                progress += 1;
+                resetButton.style.background = `linear-gradient(90deg, #dc3545 ${progress}%, #9c2d38 ${progress}%)`;
+            } else {
                 clearInterval(interval);
-                clearTimeout(timeout);
-                progress = 0;
-                resetButton.style.background = '';
-            });
+            }
+        }, 12.5);
+
+        const timeout = setTimeout(async () => {
+            if (isHeld) {
+                try {
+                    // Reset button style
+                    resetButton.style.background = '';
+                    const resetResponse = await fetch(`http://localhost:3000/reset`, {
+                        method: 'DELETE',
+                    });
+
+                    if (!resetResponse.ok) {
+                        throw new Error(`Failed to reset registry: ${resetResponse.status} - ${resetResponse.statusText}`);
+                    }
+
+                    // Reload the entire page after resetting
+                    location.reload();
+                } catch (error) {
+                    console.error('Error resetting registry:', error);
+                }
+            }
+        }, 1250); // 3000 milliseconds (3 seconds)
+
+        // Clear the timeout if the mouse is released before 3 seconds
+        const mouseUpHandler = () => {
+            isHeld = false;
+            clearInterval(interval);
+            clearTimeout(timeout);
+            progress = 0;
+            resetButton.style.background = '';
+
+            // Remove the event listener after mouseup
+            document.removeEventListener('mouseup', mouseUpHandler);
+        };
+
+        document.addEventListener('mouseup', mouseUpHandler);
+    });
+    });
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Search form submission event listener
+
+        const searchForm = document.getElementById('searchForm');
+
+        document.getElementById('searchInput').value = '';
+
+        searchForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            let searchInput = document.getElementById('searchInput').value;
+
+            if (searchInput == '') {
+                searchInput = '(?s).*';
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/package/byRegex`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "RegEx": searchInput
+                    }),
+                });
+
+                if (!response.ok) {
+                    renderPackagesTable([]);
+                    throw new Error(`Failed to fetch data: ${response.status} - ${response.statusText}`);
+                }
+
+                const packages = await response.json();
+                renderPackagesTable(packages);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
         });
     });
 </script>
@@ -109,7 +161,7 @@
 <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('http://localhost:3000/packages', {
+                const response = await fetch(`http://localhost:3000/packages`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -139,15 +191,32 @@
 
             // Populate table with received data
             packages.forEach((pkg) => {
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${pkg.Name}</td>
                     <td>${pkg.Version}</td>
-                    <td><a href="/package/${pkg.ID}">View</a></td>
+                    <td><a href="#" class="view-link" data-package-id="${pkg.ID}">View</a></td>
+
                 `;
                 tableBody.appendChild(row);
             });
         }
+
+    // Add event listener for the "View" links
+        const tableBody = document.querySelector('#packagesTable tbody');
+        tableBody.addEventListener('click', (event) => {
+            const target = event.target;
+            if (target.classList.contains('view-link')) {
+                event.preventDefault();
+                const packageId = target.dataset.packageId;
+
+                // Redirect to the package details page with the corresponding package ID
+                window.location.href = `/view.html?id=${packageId}`;
+            }
+        });
+
+
     </script>
 
 </body>

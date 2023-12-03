@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Package Details</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        .navbar {
+            margin-bottom: 100px; 
+        }
+        a {
+            color: black; 
+        }
+
+        nav .container-fluid .form-control.custom-search-input {
+            width: 350px; 
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+        }
+
+        #readmeContent {
+            flex: 7;
+            width: 0;
+            overflow: hidden;
+            border-right: 1px solid #ccc; 
+            padding-right: 20px;
+        }
+
+        #packageDetails {
+            flex: 3;
+            margin-left: 20px;
+        }
+
+        #readmeHeader {
+            font-size: 35px;
+            font-family: 'Consolas', monospace;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        #title1 {
+            font-size: 20px;
+            font-weight: 500; 
+            border-bottom: 1px solid #ccc; 
+            margin-bottom: 5px;
+        }
+        
+         #title {
+            font-size: 20px;
+            font-weight: 500; 
+            border-bottom: 1px solid #ccc; 
+            padding-top: 10px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        
+        #id {
+            font-size: 16px;
+            font-family: 'Consolas', monospace; 
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="/all">All Packages</a>
+
+            <div class="d-flex align-items-center">
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+
+            <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="readmeContent">
+            <div id="readmeHeader">Readme</div>
+        </div>
+        <div id="packageDetails"></div>
+    </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    function downloadPackage(packageID, base64Content) {
+        console.log('Attempting to download package:', packageID);
+
+        const zipFileData = atob(base64Content); 
+        const blob = new Blob([new Uint8Array([...zipFileData].map(char => char.charCodeAt(0)))], { type: 'application/zip' });
+        
+        if (blob.size > 0) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${packageID}.zip`;
+            link.click();
+            console.log('Download initiated.');
+        } else {
+            console.error('Blob size is 0. Unable to initiate download.');
+        }
+    }
+                
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            
+            const packageId = window.location.search.split('=')[1];
+            
+            const response = await axios.get(`http://localhost:3000/package/${packageId}`);
+            if (!response.data) {
+                throw new Error('Package details not found');
+            }
+            const packageDetails = response.data;
+            
+            
+            const ratingResponse = await axios.get(`http://localhost:3000/package/${packageId}/rate`);
+            if (!ratingResponse.data) {
+                throw new Error('Package ratings not found');
+            }
+            const packageRatings = ratingResponse.data;
+            
+
+            // Display package details on the page
+            const packageDetailsDiv = document.getElementById('packageDetails');
+            packageDetailsDiv.innerHTML = `
+                <button class="btn btn-success mb-3" onclick="downloadPackage('${packageDetails.metadata.ID}', '${packageDetails.data.Content}')">Download Package</button>                                                                
+                
+                <div id="title1">
+                    Package Name
+                </div>
+                <div id="id">${packageDetails.metadata.Name}</div>
+                                               
+                <div id="title">
+                    Package URL
+                </div>
+                                                                                                                                              
+                <div id="id">
+                    <a href="${packageDetails.data.URL}" target="_blank">${packageDetails.data.URL}</a>
+                </div>
+                                               
+                <div id="title">
+                    Package Version
+                </div>
+                <div id="id">${packageDetails.metadata.Version} </div>
+                                                                                   
+                                                                                               
+                <div id="title">
+                    Package Ratings
+                </div>
+                                                                                                   
+                <div id="id">
+                <ul>
+                    <li>Bus Factor: ${packageRatings.BusFactor.toFixed(2)}</li>
+                    <li>Correctness: ${packageRatings.Correctness.toFixed(2)}</li>
+                    <li>Ramp Up: ${packageRatings.RampUp.toFixed(2)}</li>
+                    <li>Responsive Maintainer: ${packageRatings.ResponsiveMaintainer.toFixed(2)}</li>
+                    <li>License Score: ${packageRatings.LicenseScore.toFixed(2)}</li>
+                    <li>Good Pinning Practice: ${packageRatings.GoodPinningPractice.toFixed(2)}</li>
+                    <li>Pull Request: ${packageRatings.PullRequest.toFixed(2)}</li>
+                    <li>Net Score: ${packageRatings.NetScore.toFixed(2)}</li>
+                </ul>
+                </div>
+                                                                             
+            `;
+                
+
+            const githubApiUrl = packageDetails.data.URL.replace('https://github.com/', 'https://api.github.com/repos/');
+            const readmeUrl = `${githubApiUrl}/readme`;
+            const readmeResponse = await axios.get(readmeUrl, { headers: { Accept: 'application/vnd.github.v3.raw' } });
+
+            if (readmeResponse.data) {
+                const readmeContentDiv = document.getElementById('readmeContent');
+                readmeContentDiv.innerHTML = `
+                    <div id="readmeHeader">README.MD</div>
+                    ${marked.parse(readmeResponse.data, { sanitize: true })}
+                `;
+            }
+        } catch (error) {
+            console.error('Error fetching package details:', error);
+        }
+    });
+</script>
+</body>
+</html>

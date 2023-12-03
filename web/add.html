@@ -21,11 +21,11 @@
 <body>
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="/all">Module Registry</a>
+            <a class="navbar-brand" href="/all">All Packages</a>
 
             <div class="d-flex align-items-center">
                 <form class="d-flex" role="search">
-                    <input class="form-control me-2 custom-search-input" type="search" placeholder="Search" aria-label="Search">
+                    <input class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
             </div>
@@ -55,9 +55,9 @@
         <div class="form-group mb-2" id="urlGroup">
                     <label for="url" class="form-label">Package URL (for use in public ingest).</label>
                     <input type="text" class="form-control" id="url"
-                        placeholder="https://www.github.com/username/reponame" aria-describedby="urlBlock">
+                        placeholder="https:// github.com/... or npmjs.com/..." aria-describedby="urlBlock">
                     <div id="urlBlock" class="form-text">
-                        Your URL must be a GitHub URL
+                        Your URL must be a GitHub or a npm URL
                     </div>
                 </div>
 
@@ -166,7 +166,7 @@
                     JSProgram: jsProgram
                 });
                 document.getElementById('result').innerHTML = `<div class="alert alert-success" role="alert">
-                                                           Package added successfully with URL!
+                                                           Your Package has been approved and added successfully to the registry!
                                                        </div>`;
             } else if (!isUrlSelected && contentInput !== null) {
 

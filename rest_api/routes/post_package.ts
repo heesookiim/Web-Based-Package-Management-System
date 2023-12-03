@@ -11,7 +11,7 @@ import { FieldPacket, RowDataPacket } from 'mysql2';
 
 import * as schema from '../../schema';
 import { connectToDatabase, dbName, tableName } from "../db";
-import { getAllRatings } from "../../rate/analyze"
+import { getAllRatings, fetchNpmDataWithAxios, getGithubUrlFromNpmData } from "../../rate/analyze"
 import { logger } from "../../logger_cfg";
 import { PackageRating} from "../../schema";
 
@@ -23,6 +23,7 @@ let table = `${dbName}.${tableName}`
 router.post('/', async (req: Request, res: Response) => {
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
     logger.info(`Iniitiating POST request for ${req}`);
+
 
     deleteZipFiles('rest_api');
     /** delete 'dump' directory if it exists **/
@@ -56,14 +57,31 @@ router.post('/', async (req: Request, res: Response) => {
 
     let name: string = '';
     let version: string = '';
-    let url: string = '';
+    let url: any = '';
     let id: string = '';
 
-    /** download the repo from the link and extract information **/
+
     if (URL) {
+        if (URL.includes('npmjs.com')) {
+            try {
+                let package_name = URL.replace('https://www.npmjs.com/package/', '');
+                package_name = package_name.replace('/', '');
+                const data = await fetchNpmDataWithAxios(package_name);
+                url = getGithubUrlFromNpmData(data);
+            } catch (error) {
+                logger.error('Invalid URL: ' + url);
+                return res.status(503).json({
+                    error: `Invalid URL Link.`,
+                });
+            }
+
+        } else {
+            url = URL;
+        }
+
         try {
-            await downloadRepo(URL, 'rest_api/dump');
-            logger.debug(`Downloading repository ${URL}`);
+            await downloadRepo(url, 'rest_api/dump');
+            logger.debug(`Downloading repository ${url}`);
         } catch (error) {
             logger.error(`Failed POST request. Error 503`);
             return res.status(503).json({
@@ -89,15 +107,14 @@ router.post('/', async (req: Request, res: Response) => {
         const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
         const packageJson = JSON.parse(packageJsonContent);
 
-        if (URL) {
-            url = URL;
-        } else {
-            url = getGithubUrl(packageJson.repository.url as string);
-        }
+
         const pathParts = url.split('/');
         const nonEmptyParts = pathParts.filter((part: string) => part.trim() !== '');
         const projectName = nonEmptyParts[nonEmptyParts.length - 1];
 
+        if (!URL) {
+            url = getGithubUrl(packageJson.repository.url as string);
+        }
         name = packageJson.name;
         if (!name) {
             name = projectName;
@@ -145,12 +162,9 @@ router.post('/', async (req: Request, res: Response) => {
     const { fileContent, outputZipPath }: { fileContent: string, outputZipPath: string } = zipResult;
 
     let packageRating: PackageRating = await getAllRatings(url);
-    console.log('==========================');
-    console.log(`package rating for ${id}`);
-    console.log(packageRating);
 
     // Check the NetScore in the rating
-    if (packageRating && packageRating.NetScore !== -1 && packageRating.NetScore < 0.35) {
+    if (packageRating && packageRating.NetScore !== -1 && packageRating.NetScore < 0.5) {
         logger.error(`Failed POST request. Error 424`);
         return res.status(424).json({
             error: "Package is not uploaded due to the disqualified rating."
@@ -188,6 +202,7 @@ router.post('/', async (req: Request, res: Response) => {
                packageRating.PullRequest,
                packageRating.NetScore]) as any;
         result = results;
+
     } catch (error) {
         logger.error(`Failed POST request. Error 503`);
         return res.status(503).json({
@@ -246,7 +261,7 @@ export async function downloadRepo(url: string, path: string)  {
     try {
         await Promise.race([
             exec(`git clone ${url} ${path}`),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(failed)), 60000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(failed)), 90000))
         ]);
     } catch (error) {
         throw error;
@@ -292,7 +307,7 @@ export async function ZIP(sourcePath: string, name: string, version: string, fil
     return { fileContent, outputZipPath };
 }
 
-async function decodeBase64AndExtract(base64String: string, outputPath: string) {
+export async function decodeBase64AndExtract(base64String: string, outputPath: string) {
     const cleanedBase64String = base64String.replace(/\s/g, '');
     const zip = new AdmZip(Buffer.from(cleanedBase64String, 'base64'));
 
@@ -321,18 +336,11 @@ async function decodeBase64AndExtract(base64String: string, outputPath: string) 
 function deleteZipFiles(directoryPath: string): void {
     fileSystem.readdir(directoryPath, (err, files) => {
         if (err) {
-            console.error('Error reading directory:', err);
             throw err;
         }
 
         // Filter the files to only include zip files
         const zipFiles = files.filter((file) => file.endsWith('.zip'));
-
-        // Check if there are any zip files
-        if (zipFiles.length === 0) {
-            console.log('No zip files found in the specified directory.');
-//            throw err;
-        }
 
         // Delete each zip file
         zipFiles.forEach((file) => {
@@ -340,10 +348,8 @@ function deleteZipFiles(directoryPath: string): void {
 
             fileSystem.unlink(filePath, (unlinkErr) => {
                 if (unlinkErr) {
-                    console.error('Error deleting file:', filePath, unlinkErr);
 //                    throw err;
                 } else {
-                    console.log('Deleted file:', filePath);
                 }
             });
         });

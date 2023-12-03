@@ -29,7 +29,7 @@ router.delete('/byName/:name', async (req: Request, res: Response) => {
     // delete package from database
     try {
         logger.debug('Finding package in database');
-        await connection.execute(`DELETE * FROM ${table} WHERE Name = ?`, [packageName]);   // delete package
+        await connection.execute(`DELETE FROM ${table} WHERE Name = ?`, [packageName]);   // delete package
         
         logger.info(`returning status 200, deleted package`);
         return res.status(200).json({Success: 'Package is deleted.'});

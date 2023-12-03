@@ -53,7 +53,13 @@ initializeDatabase()
 
         app.get(['/all', '/home', '/'], (req, res)=> {
             res.sendFile(path.join(__dirname, '../web', 'packages.html'));
-        });          
+        });
+
+        // Add a route for view.html
+        app.get(['/view', '/view.html', '/view/*'], (req, res)=> {
+            res.sendFile(path.join(__dirname, '../web', 'view.html'));
+        });
+
     })
 
 export { server, app };

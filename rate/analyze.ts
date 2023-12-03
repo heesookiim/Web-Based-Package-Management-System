@@ -96,7 +96,7 @@ export async function analyzeDependencies(url: string) {
     };
 }
 
-function getGithubUrlFromNpmData(data: any): string | null {
+export function getGithubUrlFromNpmData(data: any): string | null {
     if (data && data.repository && data.repository.url) {
         const repoUrl = data.repository.url;
         logger.debug("Original repo URL: " + repoUrl);
@@ -125,7 +125,7 @@ function getGithubUrlFromNpmData(data: any): string | null {
     return null;
 }
 
-async function fetchNpmDataWithAxios(packageName: string) {
+export async function fetchNpmDataWithAxios(packageName: string) {
     const endpoint = `https://registry.npmjs.org/${packageName}`;
     try {
         const response = await axios.get(endpoint, { timeout: 10000 });
