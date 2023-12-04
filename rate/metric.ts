@@ -36,7 +36,6 @@ export async function busFactor(repositoryUrl: string) {
     const repoFilename = path.join(dirName, 'repositoryData.json');
     fs.writeFileSync(repoFilename, JSON.stringify(repositoryData, null, 2));
 
-    let totalCommits = 0;
     const contributorsUrl = repositoryData.contributors_url;
     const contributorsResponse = await axios.get(contributorsUrl, { headers });
     const contributorsData = contributorsResponse.data;
@@ -44,35 +43,54 @@ export async function busFactor(repositoryUrl: string) {
     const contributorsFilename = path.join(dirName, 'contributorsData.json');
     fs.writeFileSync(contributorsFilename, JSON.stringify(contributorsData, null, 2));
 
+    var totalCommits = 0;
     var totalContributors = 0;
+    var significantContributors = 0;
+
+    // to be counted as a contributor, must have at least 5% of commits
+    // signficant contributors have at least 10% of commits
+
     contributorsData.forEach((contributor: any) => {
       totalCommits += contributor.contributions;
-      totalContributors++;
     });
 
-    if(totalContributors === 0) {
-      logger.info('BusFactor: 0');
+    if(totalCommits === 0) {
+      logger.info('BusFactor: 0 - no commits');
       return 0;
     }
 
-    const significantContributors = contributorsData.filter(
+    contributorsData.forEach((contributor: any) => {
+      if((contributor.contributions / totalCommits) * 100 > 10) {
+        totalContributors++;
+        significantContributors++;
+      }
+      else if((contributor.contributions / totalCommits) * 100 > 5) {
+        totalContributors++;
+      }
+    });
+
+    if(totalContributors === 0) {
+      logger.info('BusFactor: 0 - no contributors with at least 5% contribution');
+      return 0;
+    }
+
+/*    const significantContributors = contributorsData.filter(
       (contributor: any) => (contributor.contributions / totalCommits) * 100 > 5
     );
-
-    if(significantContributors.length > 10) {
+*/
+    // 7 contributors did at least 10% of work each - good bus factor
+    if(significantContributors >= 7) {
       logger.info('BusFactor: 1')
       return 1;
     }
 
-    // if someone contributes more than 10% --> significant
-    // bus factor is ratio of signifact contributors to total contributors
-    var sigLength = significantContributors.length;
-    var sigRatio = (sigLength / totalContributors);
-    logger.debug(`signficant contributors: ${sigLength}, total contributors: ${totalContributors}`);
+    // ratio between 5%+ contributors and 10%+ contributors
+    var sigRatio = (significantContributors / totalContributors);
+    logger.debug(`signficant contributors: ${significantContributors}, total contributors: ${totalContributors}`);
     
     // update to be baseed on ratio of contributors that are significant
     
-    if(sigRatio > 1) {
+    if(sigRatio >= 1) {
       return 1;
     }
     else {
