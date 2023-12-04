@@ -59,6 +59,11 @@ export async function busFactor(repositoryUrl: string) {
       (contributor: any) => (contributor.contributions / totalCommits) * 100 > 5
     );
 
+    if(significantContributors.length > 10) {
+      logger.info('BusFactor: 1')
+      return 1;
+    }
+
     // if someone contributes more than 10% --> significant
     // bus factor is ratio of signifact contributors to total contributors
     var sigLength = significantContributors.length;
