@@ -44,20 +44,36 @@ export async function busFactor(repositoryUrl: string) {
     const contributorsFilename = path.join(dirName, 'contributorsData.json');
     fs.writeFileSync(contributorsFilename, JSON.stringify(contributorsData, null, 2));
 
+    var totalContributors = 0;
     contributorsData.forEach((contributor: any) => {
       totalCommits += contributor.contributions;
+      totalContributors++;
     });
 
     const significantContributors = contributorsData.filter(
-      (contributor: any) => (contributor.contributions / totalCommits) * 100 > 5
+      (contributor: any) => (contributor.contributions / totalCommits) * 100 > 10
     );
+
+    // if someone contributes more than 10% --> significant
+    // bus factor is ratio of signifact contributors to total contributors
     var sigLength = significantContributors.length;
-    if(sigLength > 10) {
+    var sigRatio = (sigLength / totalContributors);
+    
+    // update to be baseed on ratio of contributors that are significant
+    
+    if(sigRatio > 1) {
+      return 1;
+    }
+    else {
+      return parseFloat(sigRatio.toFixed(1));
+    }
+    
+    /*if(sigLengh > 10) { // old
       return 1;
     }
     else {
       return parseFloat((sigLength / 10).toFixed(1)) ;
-    }
+    }*/
   } catch (error: any) {
     logger.error('Error:', error.message);
     return 0;
