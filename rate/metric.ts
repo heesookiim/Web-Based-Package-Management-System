@@ -69,8 +69,9 @@ export async function busFactor(repositoryUrl: string) {
       }
     });
 
-    if(totalContributors === 0) {
-      logger.info('BusFactor: 0 - no contributors with at least 5% contribution');
+    // can't divide by 0, need at least 2 contibutors above 10%
+    if(totalContributors === 0 || significantContributors < 2) {
+      logger.info('BusFactor: 0');
       return 0;
     }
 
