@@ -6,6 +6,7 @@ import { RowDataPacket } from 'mysql2';
 import * as fs from 'fs';
 import * as path from 'path';
 import { logger } from "../../logger_cfg";
+import { fetchNpmDataWithAxios, getGithubUrlFromNpmData } from "../../rate/analyze";
 
 const router = Router();
 let table = `${dbName}.${tableName}`;
@@ -45,7 +46,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
         logger.debug(`package Name: ${packageMetadata.Name}`);
         logger.debug(`package ID: ${packageRow.ID.toString()}`);
         if (packageRow.Name === packageMetadata.Name && packageRow.ID.toString() === packageId) {
-            let fileContent;
+            let return_data;
             if (packageData.URL) {
                 logger.debug(`Downloading repo from URL: ${packageData.URL}`);
                 await downloadRepo(packageData.URL, 'rest_api/dump');
@@ -55,11 +56,11 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                 await decodeBase64AndExtract(content, 'rest_api/dump');
             }
             logger.debug("Download complete");
-            fileContent = await ZIP('../dump', packageMetadata.Name, packageMetadata.Version, 'rest_api');
+            return_data = await ZIP('../dump', packageMetadata.Name, packageMetadata.Version, 'rest_api');
             logger.info(`Updating package in the database with ID: ${packageId}`);
             await connection.execute(
                 `UPDATE ${table} SET Content = ?, Version = ?, URL = ?, JSProgram = ? WHERE ID = ?`,
-                [fileContent, packageMetadata.Version, packageData.URL, packageData.JSProgram, packageId]
+                [return_data.fileContent, packageMetadata.Version, packageData.URL, packageData.JSProgram, packageId]
             );
 
         } 
@@ -91,15 +92,25 @@ router.put('/:id', async (req: Request, res: Response) => {
         return res.status(400).json({ error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
     }
 
-    // else{
-    //     logger.error('Missing or improperly formed fields in PUT request');
-    //     return res.status(400).json({ error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
-    // }
-
     try {
-        await updatePackage(packageId, packageData, packageMetadata);
-        logger.info(`Package updated successfully with ID: ${packageId}`);
-        res.status(200).json({ message: 'Version is updated.' });
+        let githubUrl = packageData.URL;
+
+        // If the URL is from npmjs, extract the GitHub URL
+        if (githubUrl && githubUrl.includes('npmjs.com')) {
+            try {
+                // Extract the npm package name from the URL
+                let packageName = githubUrl.replace('https://www.npmjs.com/package/', '').split('/')[0];
+                const npmData = await fetchNpmDataWithAxios(packageName);
+                githubUrl = getGithubUrlFromNpmData(npmData) || undefined;
+            } catch (error) {
+                logger.error('Failed to fetch GitHub URL from NPMJS link: ' + githubUrl);
+                return res.status(400).json({ error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
+            }
+        }
+
+        // Proceed with the existing logic to handle GitHub URL or Content
+        await updatePackage(packageId, { ...packageData, URL: githubUrl }, packageMetadata);
+        res.status(200).json({ message: 'Package updated successfully.' });
     } catch (error: any) {
         logger.error(`Error in PUT request for package update: ${error}`);
         if (error.message == '404') {
