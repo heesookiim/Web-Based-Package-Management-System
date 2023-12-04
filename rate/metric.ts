@@ -50,14 +50,20 @@ export async function busFactor(repositoryUrl: string) {
       totalContributors++;
     });
 
+    if(totalContributors === 0) {
+      logger.info('BusFactor: 0');
+      return 0;
+    }
+
     const significantContributors = contributorsData.filter(
-      (contributor: any) => (contributor.contributions / totalCommits) * 100 > 10
+      (contributor: any) => (contributor.contributions / totalCommits) * 100 > 5
     );
 
     // if someone contributes more than 10% --> significant
     // bus factor is ratio of signifact contributors to total contributors
     var sigLength = significantContributors.length;
     var sigRatio = (sigLength / totalContributors);
+    logger.debug(`signficant contributors: ${sigLength}, total contributors: ${totalContributors}`);
     
     // update to be baseed on ratio of contributors that are significant
     
@@ -67,7 +73,7 @@ export async function busFactor(repositoryUrl: string) {
     else {
       return parseFloat(sigRatio.toFixed(1));
     }
-    
+
     /*if(sigLengh > 10) { // old
       return 1;
     }
