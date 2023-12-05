@@ -67,11 +67,7 @@ router.post('/', async (req: Request, res: Response) => {
         logger.debug('Sending the following query parameters to database: ' + queryParam);
         const [results] = await connection.execute(query, queryParam) as [RowDataPacket[], FieldPacket[]];
 
-        const resultsLength = results.length
-        if (resultsLength === 0) {
-            logger.error('There is no such package in the database');
-            return res.status(404).json({ error: 'There is no such package in the database'});
-        }
+        const resultsLength = results.length;
 
         if (( offset != 0 && resultsLength > offset * limit ) || ( offset == 0 && resultsLength > limit )) {
             logger.error('Too many packages returned')
