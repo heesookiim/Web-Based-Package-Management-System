@@ -165,8 +165,14 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
         }
     } catch (error) {
         // Handling errors specific to fetching the package
-        logger.error(`404 error: ${error}`);
-        throw new Error('404');
+        if (!error) {
+            logger.error(`404 error: ${error}`);
+            throw new Error('404');
+        }
+        else {
+            logger.error(`Error caught in PUT: ${error}`);
+            throw error;
+        }
     } finally {
         // Closing the database connection
         if (connection) {
