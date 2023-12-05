@@ -9,7 +9,11 @@ const router = Router();
 router.post('/', async (req: Request, res: Response) => {
     logger.info('POST /packages performed');
 
-    const offset = parseInt(req.query.offset as string) || 0;
+    let offset = parseInt(req.query.offset as string) || 0;
+    if (offset < 0) {
+        offset = 0;
+    }
+
     const package_queries = req.body as schema.PackageQuery[]; 
     const limit = 10;   // number of data rows per page
 
