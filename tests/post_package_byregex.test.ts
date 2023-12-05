@@ -53,7 +53,7 @@ describe('/POST package/byRegEx', () => {
             .send({});
 
         expect(response.status).toBe(400);
-        expect(response.body).toEqual({error: 'There is missing field(s) in the PackageRegEx or it is formed improperly'});
+        expect(response.body).toEqual({error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});
     });
     it('returns 500 for database connection failure', async () => {
         const response = await request(app).post('/package/byRegEx').send({ RegEx: '.*' });

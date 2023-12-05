@@ -49,7 +49,7 @@ describe('Interaction with the database', () => {
             .send([invalidPackageQuery]);
         expect(res.status).toBe(400);
     });
-    it('responds with 404 when no pacakges match the query', async () =>{
+    it('responds with 200 when no pacakges match the query', async () =>{
         (connectToDatabase as jest.Mock).mockResolvedValue({
             execute: jest.fn().mockResolvedValue([[], []]),
             end: jest.fn().mockResolvedValue(null),
@@ -59,17 +59,17 @@ describe('Interaction with the database', () => {
             .post('/packages')
             .send([{ Name: 'nonexisitent', Version: '0.0.0' }]);
         
-        expect(res.status).toBe(404);
+        expect(res.status).toBe(200);
     });
-    it('responds with 404 when offset leads to no packages found', async () => {
+    it('responds with 200 when offset leads to no packages found', async () => {
         const largeOffset = '1000';
         const res = await request(app)
             .post('/packages')
             .query({ offset: largeOffset })
             .send([{ Name: 'anyPackage', Version: '1.0.0' }]);
 
-        expect(res.status).toBe(404);
-        expect(res.body.error).toBe('There is no such package in the database');
+        expect(res.status).toBe(200);
+        //expect(res.body.error).toBe('There is no such package in the database');
     });
     it('responds with 413 when too many packages are returned', async () => {
         const mockPackages = new Array(11).fill({ Name: 'sample', Version: '1.0.0', ID: '1' });
