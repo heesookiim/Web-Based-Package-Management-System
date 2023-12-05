@@ -60,8 +60,8 @@ function countPackagesWithCaretRange(packageJson: any, dependencyType: string) {
 }
 
 // main function of the file calls the required functions for a GitHub repo link - 1st metric
-export async function analyzePackages(gitHubLink: string): Promise<any> {
-    logger.info(`Analyzing GitHub Link: ${gitHubLink}`);
+export async function analyzePackages(path: string = 'rest_api/dump', file: string = 'package.json'): Promise<any> {
+    logger.info(`Analyzing package.json file for path ${path}`);
     let rating = 1; // if no dependencies exist then the rating is 1
     
     /** reset **/
@@ -71,18 +71,19 @@ export async function analyzePackages(gitHubLink: string): Promise<any> {
 
     try {
 //        const packageJson = await getPackageJsonFromGitHubRepo(gitHubLink); // converts the gitHubLink to a raw GitHub response for that file
-        const packageJsonPath = pathModule.join('rest_api/dump', 'package.json')
+        const packageJsonPath = pathModule.join(path, file)
         const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
         const packageJson = JSON.parse(packageJsonContent);
         countPackagesWithCaretRange(packageJson, 'dependencies'); // analyzes the dependencies data type from the response
         countPackagesWithCaretRange(packageJson, 'devDependencies'); // analyzes the devDependencies data type from the response
+
 
         if (dependenciesFlag) {
             rating = count_nonConstraint/(count_nonConstraint + count_constraint); // calculates the rating
             // if all dependencies are constrains then count_nonConstraint = 0 so rating is 0
         }
     } catch (error) {
-        logger.error(`Failed async call for function analyzePackages for GitHub Link: ${gitHubLink}`);
+        logger.error(`Failed call for function analyzePackages for path ${path}`);
         rating = 0;
     }
     

@@ -156,9 +156,14 @@ router.post('/', async (req: Request, res: Response) => {
             error: "Package exists already."
         });
     }
-
-    /** create the zip file **/
-    const zipResult = await ZIP('../dump', name, version, 'rest_api', res);
+    let zipResult;
+    try {
+        zipResult = await ZIP('../dump', name, version, 'rest_api', res);
+    } catch (error) {
+        return res.status(503).json({
+            error: `Package length is too big. ${error}`
+        });
+    }
     const { fileContent, outputZipPath }: { fileContent: string, outputZipPath: string } = zipResult;
 
     let packageRating: PackageRating = await getAllRatings(url);
@@ -304,7 +309,13 @@ export async function ZIP(sourcePath: string, name: string, version: string, fil
     });
 
     archive.finalize();
-    await fileContentPromise;
+
+    try {
+        await fileContentPromise;
+    } catch (error) {
+        throw error;
+    }
+
     let fileContent: string = await fileContentPromise as string;
     return { fileContent, outputZipPath };
 }

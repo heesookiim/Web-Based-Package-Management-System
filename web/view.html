@@ -89,9 +89,9 @@
     </nav>
 
     <div class="container">
-        <div id="readmeContent">
-            <div id="readmeHeader">Readme</div>
-        </div>
+        <!--<div id="readmeContent">-->
+        <!--    <div id="readmeHeader">Readme</div>-->
+        <!--</div>-->
         <div id="packageDetails"></div>
     </div>
 
@@ -141,7 +141,6 @@
             // Display package details on the page
             const packageDetailsDiv = document.getElementById('packageDetails');
             packageDetailsDiv.innerHTML = `
-                <button class="btn btn-success mb-3" onclick="downloadPackage('${packageDetails.metadata.ID}', '${packageDetails.data.Content}')">Download Package</button>                                                                
                 
                 <div id="title1">
                     Package Name
@@ -178,21 +177,13 @@
                     <li>Net Score: ${packageRatings.NetScore.toFixed(2)}</li>
                 </ul>
                 </div>
+
+               <button class="btn btn-success mb-3" onclick="downloadPackage('${packageDetails.metadata.ID}', '${packageDetails.data.Content}')">Download Package</button>
+
                                                                              
             `;
                 
 
-            const githubApiUrl = packageDetails.data.URL.replace('https://github.com/', 'https://api.github.com/repos/');
-            const readmeUrl = `${githubApiUrl}/readme`;
-            const readmeResponse = await axios.get(readmeUrl, { headers: { Accept: 'application/vnd.github.v3.raw' } });
-
-            if (readmeResponse.data) {
-                const readmeContentDiv = document.getElementById('readmeContent');
-                readmeContentDiv.innerHTML = `
-                    <div id="readmeHeader">README.MD</div>
-                    ${marked.parse(readmeResponse.data, { sanitize: true })}
-                `;
-            }
         } catch (error) {
             console.error('Error fetching package details:', error);
         }
