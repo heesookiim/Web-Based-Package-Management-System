@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "API": "npx ts-node rest_api/*.ts ",
-    "test": "npx jest db.test.ts delete_reset.test.ts post_package_byregex.test.ts post_packages.test.ts analyze.test.ts new-metrics.test.ts --coverage"
+    "test": "npx jest db.test.ts analyze.test.ts new-metrics.test.ts rate.test.ts --coverage"
   },
   "repository": {
     "type": "git",
