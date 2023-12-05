@@ -20,11 +20,15 @@ router.delete('/:id', async (req: Request, res: Response) => {
     let connection;
     try {
         connection = await connectToDatabase();
+        logger.debug('Successfully connected to database');
     } catch (error) {
         logger.error(`Failed to connect with database. Error 503: ${error}`);
         return res.status(503).json({error: `Error connecting to the database: ${error}`});
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
     }
-    logger.debug('Successfully connected to database');
 
     // delete package from database
     try {

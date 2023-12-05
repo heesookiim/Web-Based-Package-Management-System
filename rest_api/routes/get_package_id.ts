@@ -38,6 +38,10 @@ router.get('/:id', async (req: Request, res: Response) => {
         return res.status(503).json({
             error: `Error connecting to the database: ${error}`,
         });
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
     }
 
     // return based on success in finding package

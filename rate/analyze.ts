@@ -144,7 +144,7 @@ export async function getAllRatings(repoUrl: string) {
     // get all ratings
     const phase1Scores = await analyzeDependencies(repoUrl);
     logger.debug('Phase 1 scores: ' + JSON.stringify(phase1Scores, null, 2));
-    const analyzeRating = await analyzePackages(repoUrl);
+    const analyzeRating = await analyzePackages();
     logger.debug('Analyze rating: ' + analyzeRating);
     const pr_review_ratio = await analyzePullRequests(repoUrl);
     logger.debug('PR review ratio: ' + pr_review_ratio);
