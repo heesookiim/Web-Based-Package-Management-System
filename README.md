@@ -1,21 +1,27 @@
 # A Trustworthy Module Registry
 
-Fall 2023 ECE 461 Group 8. Project Phase 2.
+Fall 2023 Purdue ECE 461 Project Phase 2 by group 8.
 
 
 ### Installation
 
 Step-by-step instructions on how to install and run the project.
 
-```bash
+```js
 # Command to install dependencies
-./run install
+npm install
 ```
 
 ```js
 # Starts the program
 npm run API
 ```
+
+```js
+# Tests the program
+npm test
+```
+
 
 ### Endpoints supported 
 | Endpoint | Description |
@@ -29,6 +35,3 @@ npm run API
 | `GET /package/{id}` | Interact with the package with this ID |
 | `GET /package/{id}/rate` | Get ratings for this package |
 | `PUT /package/{id}` | Update this content of the package |
-
-
-
