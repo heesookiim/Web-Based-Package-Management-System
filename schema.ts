@@ -28,14 +28,14 @@ export interface UserAuthenticationInfo {
 export type PackageID = string;
 
 export interface PackageRating {
-  BusFactor: number | -1;
-  Correctness: number | -1;
-  RampUp: number | -1;
-  ResponsiveMaintainer: number | -1;
-  LicenseScore: number | -1;
-  GoodPinningPractice: number | -1;
-  PullRequest: number | -1;
-  NetScore: number | -1;
+  BusFactor: number | 0;
+  Correctness: number | 0;
+  RampUp: number | 0;
+  ResponsiveMaintainer: number | 0;
+  LicenseScore: number | 0;
+  GoodPinningPractice: number | 0;
+  PullRequest: number | 0;
+  NetScore: number | 0;
 }
 
 export interface PackageHistoryEntry {

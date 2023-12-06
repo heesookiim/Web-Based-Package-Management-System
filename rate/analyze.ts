@@ -140,28 +140,42 @@ export async function fetchNpmDataWithAxios(packageName: string) {
 export async function getAllRatings(repoUrl: string) {
     dotenv.config();
     logger.info(`Analyzing Link: ${repoUrl}`);
+    try {
+        // get all ratings
+        const phase1Scores = await analyzeDependencies(repoUrl);
+        logger.debug('Phase 1 scores: ' + JSON.stringify(phase1Scores, null, 2));
+        const analyzeRating = await analyzePackages();
+        logger.debug('Analyze rating: ' + analyzeRating);
+        const pr_review_ratio = await analyzePullRequests(repoUrl);
+        logger.debug('PR review ratio: ' + pr_review_ratio);
 
-    // get all ratings
-    const phase1Scores = await analyzeDependencies(repoUrl);
-    logger.debug('Phase 1 scores: ' + JSON.stringify(phase1Scores, null, 2));
-    const analyzeRating = await analyzePackages();
-    logger.debug('Analyze rating: ' + analyzeRating);
-    const pr_review_ratio = await analyzePullRequests(repoUrl);
-    logger.debug('PR review ratio: ' + pr_review_ratio);
-
-    // fill in data structure
-    const rating: PackageRating = {
-        BusFactor: phase1Scores.BUS_FACTOR_SCORE,
-        Correctness: phase1Scores.CORRECTNESS_SCORE,
-        RampUp: phase1Scores.RAMP_UP_SCORE,
-        ResponsiveMaintainer: phase1Scores.RESPONSIVE_MAINTAINER_SCORE,
-        LicenseScore: phase1Scores.LICENSE_SCORE,
-        GoodPinningPractice: analyzeRating,
-        PullRequest: pr_review_ratio,
-        NetScore: phase1Scores.NET_SCORE
-    };
-    logger.info('Final rating: ' + JSON.stringify(rating, null, 2));
-    return rating;
+        // fill in data structure
+        const rating: PackageRating = {
+            BusFactor: phase1Scores.BUS_FACTOR_SCORE,
+            Correctness: phase1Scores.CORRECTNESS_SCORE,
+            RampUp: phase1Scores.RAMP_UP_SCORE,
+            ResponsiveMaintainer: phase1Scores.RESPONSIVE_MAINTAINER_SCORE,
+            LicenseScore: phase1Scores.LICENSE_SCORE,
+            GoodPinningPractice: analyzeRating,
+            PullRequest: pr_review_ratio,
+            NetScore: phase1Scores.NET_SCORE
+        };
+        logger.info('Final rating: ' + JSON.stringify(rating, null, 2));
+        return rating;
+    } catch (error) {
+        logger.error('Error analyzing dependencies: ' + error + '\nreturned default rating');
+        return {
+            BusFactor: 0,
+            Correctness: 0,
+            RampUp: 0,
+            ResponsiveMaintainer: 0,
+            LicenseScore: 0,
+            GoodPinningPractice: 0,
+            PullRequest: 0,
+            NetScore: 0
+        };
+    }
+    
 }
 
 /*

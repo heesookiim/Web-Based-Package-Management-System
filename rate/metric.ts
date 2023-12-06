@@ -137,7 +137,7 @@ export async function license(repositoryUrl: string) {
     
     // check if license is in list
     const lowercaseLicense = license.toLowerCase();
-    logger.debug('License: ' + lowercaseLicense)
+    //logger.debug('License: ' + lowercaseLicense)
 
     // Check if the lowercase input contains any license shortcut
     if (licenseShortcuts.some((shortcut) => lowercaseLicense.includes(shortcut))) {
