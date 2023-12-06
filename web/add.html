@@ -108,7 +108,7 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <!-- Include your compiled TypeScript/JavaScript file -->
-<script src="app.js"></script>
+<!---<script src="app.js"></script>--->
 <script>
     window.onload = function () {
         // Reset the input values
@@ -176,24 +176,19 @@
                 if (contentInput.files.length > 0) {
                     const file = contentInput.files[0];
 
-                    // Check if the selected file is a ZIP file
-                    if (file.type === 'application/zip') {
-                        // Read the file as a base64 string
-                        const base64Content = await readFileAsBase64(file);
-                        // Make the post request
-                        //await axios.post('http://localhost:3000/package', {
-                        await axios.post('http://3.139.239.92:6123/package', {
-                            Content: base64Content,
-                            JSProgram: jsProgram
-                        });
+                    // Read the file as a base64 string
+                    const base64Content = await readFileAsBase64(file);
+                    // Make the post request
+                    //await axios.post('http://localhost:3000/package', {
+                    await axios.post('http://3.139.239.92:6123/package', {
+                        Content: base64Content,
+                        JSProgram: jsProgram
+                    });
 
 
-                        document.getElementById('result').innerHTML = `<div class="alert alert-success" role="alert">
-                                                                        Package added successfully with Content!
-                                                                    </div>`;
-                    } else {
-                        throw new Error('Invalid file type. Please select a ZIP file.');
-                    }
+                    document.getElementById('result').innerHTML = `<div class="alert alert-success" role="alert">
+                                                                    Package added successfully with Content!
+                                                                </div>`;
                 } else {
                     throw new Error('Please select a ZIP file.');
                 }
@@ -202,7 +197,7 @@
             }
         } catch (error) {
             document.getElementById('result').innerHTML = `<div class="alert alert-danger" role="alert">
-                                                   Error: ${error.response.data.error || 'Unknown error'}
+                                                   Error: ${error.response.data.error || 'Unable to upload file. Please check file type.'}
                                                </div>`;
 
         } finally {
