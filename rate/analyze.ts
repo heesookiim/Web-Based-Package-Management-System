@@ -96,7 +96,7 @@ export async function analyzeDependencies(url: string) {
     };
 }
 
-function getGithubUrlFromNpmData(data: any): string | null {
+export function getGithubUrlFromNpmData(data: any): string | null {
     if (data && data.repository && data.repository.url) {
         const repoUrl = data.repository.url;
         logger.debug("Original repo URL: " + repoUrl);
@@ -125,7 +125,7 @@ function getGithubUrlFromNpmData(data: any): string | null {
     return null;
 }
 
-async function fetchNpmDataWithAxios(packageName: string) {
+export async function fetchNpmDataWithAxios(packageName: string) {
     const endpoint = `https://registry.npmjs.org/${packageName}`;
     try {
         const response = await axios.get(endpoint, { timeout: 10000 });
@@ -140,46 +140,61 @@ async function fetchNpmDataWithAxios(packageName: string) {
 export async function getAllRatings(repoUrl: string) {
     dotenv.config();
     logger.info(`Analyzing Link: ${repoUrl}`);
+    try {
+        // get all ratings
+        const phase1Scores = await analyzeDependencies(repoUrl);
+        logger.debug('Phase 1 scores: ' + JSON.stringify(phase1Scores, null, 2));
+        const analyzeRating = await analyzePackages();
+        logger.debug('Analyze rating: ' + analyzeRating);
+        const pr_review_ratio = await analyzePullRequests(repoUrl);
+        logger.debug('PR review ratio: ' + pr_review_ratio);
 
-    // get all ratings
-    const phase1Scores = await analyzeDependencies(repoUrl);
-    logger.debug('Phase 1 scores: ' + JSON.stringify(phase1Scores, null, 2));
-    const analyzeRating = await analyzePackages(repoUrl);
-    logger.debug('Analyze rating: ' + analyzeRating);
-    const pr_review_ratio = await analyzePullRequests(repoUrl);
-    logger.debug('PR review ratio: ' + pr_review_ratio);
-
-    // fill in data structure
-    const rating: PackageRating = {
-        BusFactor: phase1Scores.BUS_FACTOR_SCORE,
-        Correctness: phase1Scores.CORRECTNESS_SCORE,
-        RampUp: phase1Scores.RAMP_UP_SCORE,
-        ResponsiveMaintainer: phase1Scores.RESPONSIVE_MAINTAINER_SCORE,
-        LicenseScore: phase1Scores.LICENSE_SCORE,
-        GoodPinningPractice: analyzeRating,
-        PullRequest: pr_review_ratio,
-        NetScore: phase1Scores.NET_SCORE
-    };
-    logger.info('Final rating: ' + JSON.stringify(rating, null, 2));
-    return rating;
+        // fill in data structure
+        const rating: PackageRating = {
+            BusFactor: phase1Scores.BUS_FACTOR_SCORE,
+            Correctness: phase1Scores.CORRECTNESS_SCORE,
+            RampUp: phase1Scores.RAMP_UP_SCORE,
+            ResponsiveMaintainer: phase1Scores.RESPONSIVE_MAINTAINER_SCORE,
+            LicenseScore: phase1Scores.LICENSE_SCORE,
+            GoodPinningPractice: analyzeRating,
+            PullRequest: pr_review_ratio,
+            NetScore: phase1Scores.NET_SCORE
+        };
+        logger.info('Final rating: ' + JSON.stringify(rating, null, 2));
+        return rating;
+    } catch (error) {
+        logger.error('Error analyzing dependencies: ' + error + '\nreturned default rating');
+        return {
+            BusFactor: 0,
+            Correctness: 0,
+            RampUp: 0,
+            ResponsiveMaintainer: 0,
+            LicenseScore: 0,
+            GoodPinningPractice: 0,
+            PullRequest: 0,
+            NetScore: 0
+        };
+    }
+    
 }
 
 /*
 // used for running from bash script for local testing
 (async () => {
-    if (argv.length >= 3) {
-        const file = argv[2];
-        logger.info('Analyzing file: ' + file);
+    //if (argv.length >= 3) {
+    //    const file = argv[2];
+    //    logger.info('Analyzing file: ' + file);
         
         // urls from file
-        const urls = fs.readFileSync(file, 'utf-8').split('\r\n').filter(Boolean);
-        for(const url of urls) {
-            let scores = await analyzeDependencies(url);
-            console.log(JSON.stringify(scores));
-        }
+    //    const urls = fs.readFileSync(file, 'utf-8').split('\r\n').filter(Boolean);
+    //    for(const url of urls) {
+    //        let scores = await analyzeDependencies(url);
+    //        console.log(JSON.stringify(scores));
+    //    }
+    //}
+    if (argv.length >= 3) {
+        const url = argv[2];
+        let scores = await getAllRatings(url);
+        console.log(JSON.stringify(scores));
     }
-    //if (argv.length >= 3) {
-    //    const url = argv[2];
-    //    let scores = await getAllRatings(url);
-    //    console.log(JSON.stringify(scores));
 })();*/

@@ -4,7 +4,8 @@
   "description": "phase2",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "API": "npx ts-node rest_api/*.ts ",
+    "test": "npx jest db.test.ts analyze.test.ts new-metrics.test.ts rate.test.ts --coverage"
   },
   "repository": {
     "type": "git",
@@ -18,9 +19,13 @@
   },
   "homepage": "https://github.com/hall657/461Project-Phase2#readme",
   "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
+    "@types/archiver": "^6.0.2",
+    "@types/express": "^4.17.20",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.5.9",
     "@types/node-fetch": "^2.6.4",
+    "@types/supertest": "^2.0.16",
     "@types/tmp": "^0.2.4",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
@@ -28,17 +33,24 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "adm-zip": "^0.5.10",
     "ansi-regex": "^6.0.1",
+    "archiver": "^6.0.1",
     "axios": "^1.5.0",
     "commander": "^11.0.0",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "fs": "^0.0.1-security",
+    "get-github-url": "^1.0.4",
     "http": "^0.0.1-security",
     "isomorphic-git": "^1.24.5",
     "mimic-response": "^4.0.0",
+    "mysql2": "^3.6.3",
+    "node": "^21.1.0",
     "node-fetch": "^2.7.0",
     "package-name": "^0.1.0",
+    "supertest": "^6.3.3",
     "tmp": "^0.2.1",
-    "winston": "^3.10.0"
+    "winston": "^3.3.3"
   }
 }

@@ -36,7 +36,6 @@ export async function busFactor(repositoryUrl: string) {
     const repoFilename = path.join(dirName, 'repositoryData.json');
     fs.writeFileSync(repoFilename, JSON.stringify(repositoryData, null, 2));
 
-    let totalCommits = 0;
     const contributorsUrl = repositoryData.contributors_url;
     const contributorsResponse = await axios.get(contributorsUrl, { headers });
     const contributorsData = contributorsResponse.data;
@@ -44,20 +43,67 @@ export async function busFactor(repositoryUrl: string) {
     const contributorsFilename = path.join(dirName, 'contributorsData.json');
     fs.writeFileSync(contributorsFilename, JSON.stringify(contributorsData, null, 2));
 
+    var totalCommits = 0;
+    var totalContributors = 0;
+    var significantContributors = 0;
+
+    // to be counted as a contributor, must have at least 5% of commits
+    // signficant contributors have at least 10% of commits
+
     contributorsData.forEach((contributor: any) => {
       totalCommits += contributor.contributions;
     });
 
-    const significantContributors = contributorsData.filter(
+    if(totalCommits === 0) {
+      logger.info('BusFactor: 0 - no commits');
+      return 0;
+    }
+
+    contributorsData.forEach((contributor: any) => {
+      if((contributor.contributions / totalCommits) * 100 > 10) {
+        totalContributors++;
+        significantContributors++;
+      }
+      else if((contributor.contributions / totalCommits) * 100 > 5) {
+        totalContributors++;
+      }
+    });
+
+    // can't divide by 0, need at least 2 contibutors above 10%
+    if(totalContributors === 0 || significantContributors < 2) {
+      logger.info('BusFactor: 0');
+      return 0;
+    }
+
+/*    const significantContributors = contributorsData.filter(
       (contributor: any) => (contributor.contributions / totalCommits) * 100 > 5
     );
-    var sigLength = significantContributors.length;
-    if(sigLength > 10) {
+*/
+    // 7 contributors did at least 10% of work each - good bus factor
+    if(significantContributors >= 7) {
+      logger.info('BusFactor: 1')
+      return 1;
+    }
+
+    // ratio between 5%+ contributors and 10%+ contributors
+    var sigRatio = (significantContributors / totalContributors);
+    logger.debug(`signficant contributors: ${significantContributors}, total contributors: ${totalContributors}`);
+    
+    // update to be baseed on ratio of contributors that are significant
+    
+    if(sigRatio >= 1) {
+      return 1;
+    }
+    else {
+      return parseFloat(sigRatio.toFixed(1));
+    }
+
+    /*if(sigLengh > 10) { // old
       return 1;
     }
     else {
       return parseFloat((sigLength / 10).toFixed(1)) ;
-    }
+    }*/
   } catch (error: any) {
     logger.error('Error:', error.message);
     return 0;
@@ -91,7 +137,7 @@ export async function license(repositoryUrl: string) {
     
     // check if license is in list
     const lowercaseLicense = license.toLowerCase();
-    logger.debug('License: ' + lowercaseLicense)
+    //logger.debug('License: ' + lowercaseLicense)
 
     // Check if the lowercase input contains any license shortcut
     if (licenseShortcuts.some((shortcut) => lowercaseLicense.includes(shortcut))) {
@@ -190,6 +236,7 @@ export async function correctness(repositoryUrl: string) {
     state: 'all',
     per_page: 100, // Increase this value to retrieve more issues per page
     page: 1, // Start with page 1
+    since: new Date(new Date().setDate(new Date().getDate() - 365)).toISOString(), // Set to 1 year ago [Changed code]
   };
   let totalIssues = 0;
   let totalClosedIssues = 0;
@@ -243,6 +290,7 @@ export async function responsiveMaintainer(repositoryUrl: string) {
     state: 'all',
     per_page: 100,
     page: 1,
+    since: new Date(new Date().setDate(new Date().getDate() - 365)).toISOString(), // Set to 1 year ago [Changed code]
   };
   let totalIssues = 0;
   let totalResponseTime = 0;
@@ -416,10 +464,27 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
     } catch (err) {
       logger.error('Error getting README file size:', err);
     }
-
     const codebaseSize = await getDirectorySize(localDir, readmePath);
+
+    // check for 0/0
+    if(codebaseSize == 0 || readmeSize == 0) {
+      logger.info('Rampup score: 0');
+      return 0;
+    }
+
+    logger.debug('Readme size: ' + readmeSize);
+    logger.debug('Codebase size: ' + codebaseSize);
+
     var ratio = Math.log(readmeSize + 1) / Math.log(codebaseSize + 1);
     logger.debug('Readme vs codebase ratio: ' + ratio);
+    ratio = 1 + Math.log10(ratio);
+    logger.debug('Readme vs codebase ratio: ' + ratio);
+
+    // check for 0 score
+    if(ratio <= 0) {
+      logger.info('Rampup score: 0');
+      return 0;
+    }
 
     // remove temp directory
     tempDir.removeCallback();
@@ -427,7 +492,7 @@ export async function rampUp(repositoryUrl: string): Promise<number> {
     // finalize score
     ratio = parseFloat(ratio.toFixed(1));
     logger.info('RampUp raw score: ' + ratio);
-    if(ratio > 1) {
+    if(ratio > 1 || ratio < 0) {
       logger.info('Rampup score: 1');
       return 1;
     }

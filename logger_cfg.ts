@@ -1,5 +1,6 @@
 import * as fs from 'fs';
-import * as winston from 'winston';
+import { createLogger, transports } from 'winston';
+import { format } from 'logform';
 
 const logLevels = ['error', 'info', 'debug'];
 const logLevel = logLevels[Number(process.env.LOG_LEVEL) || 0];
@@ -15,10 +16,18 @@ if (!logFile || !logFile.trim()) {
 } else if (!fs.existsSync(logFile)) {
     fs.writeFileSync(logFile, '');
 }
-export const logger = winston.createLogger({
+export const logger = createLogger({
     level: logLevel,
-    format: winston.format.simple(),
+    format: format.combine(
+        format((info) => {
+            info.timestamp = new Date().toISOString();
+            return info;
+        })(),
+        format.printf(({ level, message, timestamp }) => {
+            return `[${timestamp}] ${level}: ${message}`;
+        }),
+    ),
     transports: [
-        new winston.transports.File({ filename: logFile })
+        new transports.File({ filename: logFile })
     ]
 });
