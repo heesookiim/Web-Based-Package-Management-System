@@ -21,9 +21,9 @@ const readFileAsync = promisify(fileSystem.readFile);
 let table = `${dbName}.${tableName}`
 
 router.post('/', async (req: Request, res: Response) => {
+    logger.info('POST package/');
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
     logger.info(`Iniitiating POST request for ${req}`);
-
 
     deleteZipFiles('rest_api');
     /** delete 'dump' directory if it exists **/
@@ -62,6 +62,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 
     if (URL) {
+        logger.info('POST /package (by URL)');
         if (URL.includes('npmjs.com')) {
             try {
                 let package_name = URL.replace('https://www.npmjs.com/package/', '');
@@ -90,6 +91,7 @@ router.post('/', async (req: Request, res: Response) => {
         }
 
     } else if (Content) {
+        logger.info('POST /package (by Content)');
         try {
             await decodeBase64AndExtract(Content, 'rest_api/dump');
             logger.debug(`Extracting Content from request body`);

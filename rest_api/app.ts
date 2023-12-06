@@ -41,9 +41,9 @@ initializeDatabase()
         app.use('/package', get_package_id);
         app.use('/package', delete_package_id);
         app.use('/package', delete_package_name);
+        app.use('/package', post_package_byregex);
         app.use('/package', post_package);
         app.use('/packages', post_packages);
-        app.use('/package', post_package_byregex);
         app.use('/reset', delete_reset);
         app.use('/package', put_package_id);
         

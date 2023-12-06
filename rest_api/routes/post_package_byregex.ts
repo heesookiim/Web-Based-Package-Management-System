@@ -8,6 +8,7 @@ const router = Router();
 let table = `${dbName}.${tableName}`
 
 router.post('/byRegEx', async (req: Request, res: Response) => {
+    logger.info('POST package/byRegEx');
     const { RegEx: regex } = req.body as schema.PackageRegEx;
     if (!regex) {
         return res.status(400).json({error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});

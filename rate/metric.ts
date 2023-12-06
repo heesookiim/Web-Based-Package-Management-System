@@ -193,7 +193,7 @@ export async function license(repositoryUrl: string) {
       if (!fs.existsSync(dirName)) {
         fs.mkdirSync(dirName);
       }
-      logger.info('Successfully got readme')
+      logger.info('Successfully got readme');
       const readmeFilename = path.join(dirName, 'readmeData.json');
       const sanitizedResponse = {
         data: readmeResponse.data,

@@ -6,6 +6,8 @@ const router = Router();
 let table = `${dbName}.${tableName}`
 
 router.delete('/', async (req: Request, res: Response) => {
+    logger.info('DELETE reset');
+
     let connection; 
     try {
         connection = await connectToDatabase();

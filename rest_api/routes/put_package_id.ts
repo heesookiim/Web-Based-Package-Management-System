@@ -178,6 +178,8 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
 
 // PUT request handler for updating a package
 router.put('/:id', async (req: Request, res: Response) => {
+    logger.info('PUT package/:id');
+
     // Extracting package information from the request parameters
     const packageId: PackageID = req.params.id;
     const packageData: PackageData = req.body.data;
