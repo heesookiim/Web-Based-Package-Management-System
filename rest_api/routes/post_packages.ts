@@ -9,9 +9,16 @@ const router = Router();
 router.post('/', async (req: Request, res: Response) => {
     logger.info('POST /packages performed');
 
-    let offset = parseInt(req.query.offset as string) || 0;
-    if (offset < 0) {
-        offset = 0;
+    let offset = 0;
+
+    try {
+        let parsedOffset = parseInt(req.query.offeset as string);
+
+        if (!isNaN(parsedOffset) && parsedOffset >= 0) {
+            offset = parsedOffset;
+        }
+    } catch (error) {
+        console.error('Error while parsing offset to SQL:', error);
     }
 
     const package_queries = req.body as schema.PackageQuery[]; 
