@@ -22,12 +22,14 @@
 <body>
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="/all">A Trustworthy Module Registry</a>
+            <a class="navbar-brand" href="/all">
+            <h5>A Trustworthy Module Registry</h5>
+        </a>
 
             <div class="d-flex align-items-center">
                 <form id="searchForm" class="d-flex" role="search">
                     <input id="searchInput" class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
+                    <button class="btn btn-success" type="submit">Search</button>
                 </form>
             </div>
             <div class="d-flex align-items-center">
@@ -199,7 +201,7 @@
                 row.innerHTML = `
                     <td>${pkg.Name}</td>
                     <td>${pkg.Version}</td>
-                    <td><a href="#" class="view-link" data-package-id="${pkg.ID}">View</a></td>
+                    <td><button class="btn btn-primary view-button" data-package-id="${pkg.ID}">View</button></td>
 
                 `;
                 tableBody.appendChild(row);
@@ -210,10 +212,9 @@
         const tableBody = document.querySelector('#packagesTable tbody');
         tableBody.addEventListener('click', (event) => {
             const target = event.target;
-            if (target.classList.contains('view-link')) {
+            if (target.classList.contains('view-button')) {
                 event.preventDefault();
                 const packageId = target.dataset.packageId;
-
                 // Redirect to the package details page with the corresponding package ID
                 window.location.href = `/view.html?id=${packageId}`;
             }

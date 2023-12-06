@@ -77,12 +77,12 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <a class="navbar-brand" href="/all">All Packages</a>
 
-            <div class="d-flex align-items-center">
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-            </div>
+            <!--<div class="d-flex align-items-center">-->
+            <!--    <form class="d-flex" role="search">-->
+            <!--        <input class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">-->
+            <!--        <button class="btn btn-outline-success" type="submit">Search</button>-->
+            <!--    </form>-->
+            <!--</div>-->
 
             <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
         </div>
@@ -131,7 +131,7 @@
             
             
             //const ratingResponse = await axios.get(`http://localhost:3000/package/${packageId}/rate`);\
-            const ratingResponse = await axios.get(`http://3.139.239.92:6123/${packageId}/rate`);
+            const ratingResponse = await axios.get(`http://3.139.239.92:6123/package/${packageId}/rate`);
             if (!ratingResponse.data) {
                 throw new Error('Package ratings not found');
             }
