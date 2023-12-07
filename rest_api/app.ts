@@ -10,6 +10,7 @@ import delete_package_id from './routes/delete_package_id';
 import delete_package_name from './routes/delete_package_name';
 import put_package_id from './routes/put_package_id';
 import post_package_byregex from './routes/post_package_byregex';
+import put_athenticate from './routes/put_authenticate';
 import * as path from 'path';
 import { initializeDatabase } from './db';
 import * as bodyParser from 'body-parser';
@@ -37,6 +38,7 @@ initializeDatabase()
         
         // Setup the routes, order matters
         // more specific should come before more general
+        app.use('/authenticate', put_athenticate);
         app.use('/package', get_package_id_rate);
         app.use('/package', get_package_id);
         app.use('/package', delete_package_id);
