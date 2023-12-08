@@ -83,7 +83,7 @@ describe('Interaction with the database', () => {
             .send([{ Name: 'anyPackage', Version: '1.0.0' }]);
 
         expect(res.status).toBe(413);
-        expect(res.body.error).toBe('Too many packages returned');
+        expect(res.body.error).toBe('Too many packages returned.');
     });
     it('responds with 200 for a successful query', async () => {
         (connectToDatabase as jest.Mock).mockResolvedValueOnce({

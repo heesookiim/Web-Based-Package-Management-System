@@ -84,7 +84,7 @@ router.post('/', async (req: Request, res: Response) => {
 
         if (( offset != 0 && resultsLength > offset * limit ) || ( offset == 0 && resultsLength > limit )) {
             logger.error('Too many packages returned')
-            return res.status(413).json({ error: 'Too many packages returned'});
+            return res.status(413).json({ error: 'Too many packages returned.'});
         }
 
         res.setHeader('offset', String(offset));
