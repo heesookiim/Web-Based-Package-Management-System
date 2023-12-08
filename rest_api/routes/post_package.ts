@@ -40,7 +40,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (!((Content && JSProgram && !URL) || (URL && JSProgram && !Content))) {
         logger.error(`Failed POST request. Error 400`);
         return res.status(400).json({
-            error: "There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.",
+            error: "There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly (e.g. Content and URL are both set), or the AuthenticationToken is invalid.",
         });
     }
 

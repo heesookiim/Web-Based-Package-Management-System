@@ -11,7 +11,7 @@ router.post('/byRegEx', async (req: Request, res: Response) => {
     const { RegEx: regex } = req.body as schema.PackageRegEx;
     logger.info(`POST package/byRegEx: ${regex}`);
     if (!regex) {
-        return res.status(400).json({error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});
+        return res.status(400).json({error: 'There is missing field(s) in the PackageRegEx/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});
     }
 
     let connection;
@@ -29,7 +29,7 @@ router.post('/byRegEx', async (req: Request, res: Response) => {
     
         if (results.length === 0) {
             logger.debug('Returning 404: No package found');
-            return res.status(404).json({error: 'No package found under this regex'});
+            return res.status(404).json({error: 'No package found under this regex.'});
         }
 
         logger.info(`Completing POST /RegEx request`);

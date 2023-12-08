@@ -212,7 +212,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
         // Updating the package using the provided data
         await updatePackage(packageId, { ...packageData, URL: githubUrl }, packageMetadata);
-        res.status(200).json({ message: 'Package updated successfully.' });
+        res.status(200).json({ message: 'Version is updated.' });
     } catch (error: any) {
         // Handling different types of errors during the PUT request
         logger.error(`Error in PUT request for package update: ${error}`);
