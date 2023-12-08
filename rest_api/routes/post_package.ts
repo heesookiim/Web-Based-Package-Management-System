@@ -23,7 +23,10 @@ let table = `${dbName}.${tableName}`
 router.post('/', async (req: Request, res: Response) => {
     logger.info('POST package/');
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
-    logger.info(`Iniitiating POST request for ${req}`);
+    //logger.info(`Iniitiating POST request for ${req}`);
+    logger.debug(`Content: ${Content}`);
+    logger.debug(`JSProgram: ${JSProgram}`);
+    logger.debug(`URL: ${URL}`);
 
     deleteZipFiles('rest_api');
     /** delete 'dump' directory if it exists **/

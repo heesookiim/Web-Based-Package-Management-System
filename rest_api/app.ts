@@ -16,6 +16,7 @@ import { initializeDatabase } from './db';
 import * as bodyParser from 'body-parser';
 import { logger } from '../logger_cfg';
 import * as http from 'http';
+import * as morgan from 'morgan';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -35,6 +36,9 @@ initializeDatabase()
         logger.info('API running on port ' + PORT);
         // console.log('API running on port ' + PORT);
         });
+
+        // incoming request logs
+        app.use(morgan('combined'));
         
         // Setup the routes, order matters
         // more specific should come before more general
