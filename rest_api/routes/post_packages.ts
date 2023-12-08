@@ -41,26 +41,28 @@ router.post('/', async (req: Request, res: Response) => {
         const { Name, Version } = package_queries[0];
         let query = 'SELECT Name, Version, ID ' +
                     'FROM ' + dbName + '.' + tableName + ' ';
-        let queryParam: string[] = [];
+        let queryParam: (string | number)[] = [];
 
-        const versionConditions = [];
+        const versionConditions: string[] = [];
 
-        logger.info('Retrieving packages that exactly match with the query');
-        if (Version.includes('-')) {
-            logger.debug('Received version: ' + 'Bounded range');
-            const [start, end] = Version.split('-');
-            versionConditions.push('Version BETWEEN ? AND ?');
-            queryParam.push(start, end);
-        } else if (Version.startsWith('^') || Version.startsWith('~')) {
-            logger.debug('Received version: ' + 'Caret or Tilde');
-            const baseVersion = Version.substring(1);
-            const upperBound = calcUpperBound(baseVersion, Version[0]);
-            versionConditions.push('Version >= ? AND Version < ?');
-            queryParam.push(baseVersion, upperBound);
-        } else {
-            logger.debug('Received version: ' + 'Exact');
-            versionConditions.push('Version = ?');
-            queryParam.push(Version);
+        if (Version) {
+            logger.info('Retrieving packages that exactly match with the query');
+            if (Version.includes('-')) {
+                logger.debug('Received version: ' + 'Bounded range');
+                const [start, end] = Version.split('-');
+                versionConditions.push('Version BETWEEN ? AND ?');
+                queryParam.push(start, end);
+            } else if (Version.startsWith('^') || Version.startsWith('~')) {
+                logger.debug('Received version: ' + 'Caret or Tilde');
+                const baseVersion = Version.substring(1);
+                const upperBound = calcUpperBound(baseVersion, Version[0]);
+                versionConditions.push('Version >= ? AND Version < ?');
+                queryParam.push(baseVersion, upperBound);
+            } else {
+                logger.debug('Received version: ' + 'Exact');
+                versionConditions.push('Version = ?');
+                queryParam.push(Version);
+            }
         }
         if (Name !== '*') {
             versionConditions.push('Name = ?');
@@ -82,7 +84,7 @@ router.post('/', async (req: Request, res: Response) => {
 
         if (( offset != 0 && resultsLength > offset * limit ) || ( offset == 0 && resultsLength > limit )) {
             logger.error('Too many packages returned')
-            return res.status(413).json({ error: 'Too many packages returned.'});
+            return res.status(413).json({ error: 'Too many packages returned'});
         }
 
         res.setHeader('offset', String(offset));
