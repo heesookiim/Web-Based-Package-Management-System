@@ -22,19 +22,19 @@
 <body>
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="/all">
-            <h5>A Trustworthy Module Registry</h5>
+            <a class="navbar-brand" href="/all" title="A Trustworthy Module Registry. View all packages.">
+            <h4>A Trustworthy Module Registry</h4>
         </a>
 
             <div class="d-flex align-items-center">
                 <form id="searchForm" class="d-flex" role="search">
-                    <input id="searchInput" class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search">
-                    <button class="btn btn-success" type="submit">Search</button>
+                    <input id="searchInput" class="form-control me-2 custom-search-input" type="search" placeholder="Search by RegEx" aria-label="Search" title="Enter a RegEx to search for packages">
+                    <button class="btn btn-success" type="submit" title="Click to search">Search</button>
                 </form>
             </div>
             <div class="d-flex align-items-center">
-        <button id="resetButton" class="btn btn-danger ms-2">Reset (Hold)</button>
-            <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
+        <button id="resetButton" class="btn btn-danger ms-2" title="Hold to reset the registry">Reset (Hold)</button>
+            <a href="/add" class="btn btn-primary ms-2" title="Add a package to the system">Add Packages</a>
             </div>
         </div>
     </nav>
@@ -201,7 +201,7 @@
                 row.innerHTML = `
                     <td>${pkg.Name}</td>
                     <td>${pkg.Version}</td>
-                    <td><button class="btn btn-primary view-button" data-package-id="${pkg.ID}">View</button></td>
+                    <td><button class="btn btn-primary view-button" title="View the package details for ${pkg.Name}" data-package-id="${pkg.ID}">View</button></td>
 
                 `;
                 tableBody.appendChild(row);

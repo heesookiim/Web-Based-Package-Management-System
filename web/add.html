@@ -7,7 +7,7 @@
     <!-- Bootstrap CSS -->
     <style>
         .required-text {
-            color: green;
+            color: red;
             font-size: 0.8em; /* Adjust the font size if needed */
         }
         nav .container-fluid .form-control.custom-search-input {
@@ -21,7 +21,9 @@
 <body>
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="/all">All Packages</a>
+             <a class="navbar-brand" href="/all" title="A Trustworthy Module Registry. View all packages.">
+            <h4>All Packages</h4>
+             </a>
 
             <!--div class="d-flex align-items-center">
                 <form class="d-flex" role="search">
@@ -30,7 +32,7 @@
                 </form>
             </div-->
 
-            <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
+            <a href="/add" class="btn btn-primary ms-2" title="Add a package to the system">Add Packages</a>
         </div>
     </nav>
 
@@ -42,19 +44,20 @@
 
         <div class="mb-3">
             <label class="form-check-label" style="margin-right: 10px;">
-                <input type="radio" class="form-check-input" name="inputType" id="urlRadio" checked>
+                <input type="radio" class="form-check-input" name="inputType" title="Select URl" id="urlRadio" checked>
                 URL
             </label>
             <label class="form-check-label ml-3" style="margin-right: 10px;">
-                <input type="radio" class="form-check-input" name="inputType" id="contentRadio">
+                <input type="radio" class="form-check-input" name="inputType" title="Select Content" id="contentRadio">
                 Content
             </label>
         </div>
 
 
         <div class="form-group mb-2" id="urlGroup">
-                    <label for="url" class="form-label">Package URL (for use in public ingest).</label>
-                    <input type="text" class="form-control" id="url"
+                    <label for="url" class="form-label" >Package URL (for use in public ingest)</label>
+                        <span class="required-text text-danger">*</span>
+                    <input type="text" class="form-control" id="url" title="Insert URL (required)"
                         placeholder="https:// github.com/... or npmjs.com/..." aria-describedby="urlBlock">
                     <div id="urlBlock" class="form-text">
                         Your URL must be a GitHub or a npm URL
@@ -63,20 +66,24 @@
 
 
                 <div class="mb-3" id="contentGroup" style="display: none;">
-                    <label for="content" class="form-label">Content:</label>
-                    <input class="form-control" type="file" id="content" accept=".zip">
+                    <label for="content" class="form-label">Content</label>
+                                            <span class="required-text text-danger">*</span>
+
+                    <input class="form-control" type="file" id="content" title="Insert ZIP (required)" accept=".zip">
                 </div>
 
 
                 <div class="form-group mb-4">
-                    <label for="jsProgram" class="form-label">A JavaScript program (for use with sensitive modules).</label>
-                    <input class="form-control" id="jsProgram" contenteditable="true">
+
+                    <label for="jsProgram" class="form-label">A JavaScript program (for use with sensitive modules)</label>
+                    <span class="required-text text-danger">*</span>
+                    <input class="form-control" title="Insert a JavaScript program (required)" id="jsProgram" contenteditable="true">
                 </div>
 
 
         <div class="form-group mt-3" style="display: flex; align-items: center;">
-            <button type="button" class="btn btn-primary" id="addPackageButton">Add Package</button>
-            <span class="required-text" style="margin-left: 10px;">Both Fields are required</span>
+            <button type="button" class="btn btn-primary" id="addPackageButton" title="Add the package to the system">Add Package</button>
+            <span class="required-text" style="margin-left: 10px;">*Required</span>
         </div>
 
 

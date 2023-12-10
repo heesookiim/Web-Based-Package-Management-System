@@ -75,7 +75,10 @@
 <body>
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="/all">All Packages</a>
+            <a class="navbar-brand" href="/all" title="A Trustworthy Module Registry. View all packages.">
+            <h4>All Packages</h4>
+            </a>
+
 
             <!--<div class="d-flex align-items-center">-->
             <!--    <form class="d-flex" role="search">-->
@@ -84,7 +87,7 @@
             <!--    </form>-->
             <!--</div>-->
 
-            <a href="/add" class="btn btn-primary ms-2">Add Packages</a>
+            <a href="/add" class="btn btn-primary ms-2" title="Add a package to the system">Add Packages</a>
         </div>
     </nav>
 
@@ -178,7 +181,7 @@
                 </ul>
                 </div>
 
-               <button class="btn btn-success mb-3" onclick="downloadPackage('${packageDetails.metadata.ID}', '${packageDetails.data.Content}')">Download Package</button>
+               <button class="btn btn-success mb-3" title="Download the latest version: ${packageDetails.metadata.ID}" onclick="downloadPackage('${packageDetails.metadata.ID}', '${packageDetails.data.Content}')">Download Package</button>
 
                                                                              
             `;
