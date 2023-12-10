@@ -24,7 +24,7 @@ router.post('/', async (req: Request, res: Response) => {
     logger.info('POST package/');
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
     //logger.info(`Iniitiating POST request for ${req}`);
-    logger.debug(`Content: ${Content}`);
+    //logger.debug(`Content: ${Content}`);
     logger.debug(`JSProgram: ${JSProgram}`);
     logger.debug(`URL: ${URL}`);
 

@@ -24,10 +24,6 @@ router.delete('/:id', async (req: Request, res: Response) => {
     } catch (error) {
         logger.error(`Failed to connect with database. Error 503: ${error}`);
         return res.status(503).json({error: `Error connecting to the database: ${error}`});
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
     }
 
     // delete package from database
@@ -42,6 +38,10 @@ router.delete('/:id', async (req: Request, res: Response) => {
         return res.status(404).json({
             error: 'Package does not exist.',
         });
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
     }
 });
 

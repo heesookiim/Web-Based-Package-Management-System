@@ -80,18 +80,18 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                     // Extracting the package content from Base64 encoded data
                     logger.debug('Decoding Base64 content and extracting');
                     const content: any = packageData.Content;
-		    //logger.debug(`content: ${content}`);
+		            //logger.debug(`content: ${content}`);
                     await decodeBase64AndExtract(content, 'rest_api/dump');
 
                     // get github url from package.json
                     logger.debug(`Extracting info from package.json`);
                     const packageJsonPath = pathModule.join('rest_api/dump', 'package.json');
                     const packageJsonContent = await fs.promises.readFile(packageJsonPath, 'utf-8');
-		    logger.debug(`JSONContent: ${packageJsonContent}`);
+		            //logger.debug(`JSONContent: ${packageJsonContent}`);
                     const packageJson = JSON.parse(packageJsonContent);
-		    //logger.debug(`pacakgeJson: ${JSON.stringify(packageJson, null, 2)}`);
+		            //logger.debug(`pacakgeJson: ${JSON.stringify(packageJson, null, 2)}`);
                     url = getGithubUrl(packageJson.repository.url as string);
-		    logger.debug(`extracted URL: ${url}`);
+		            logger.debug(`extracted URL: ${url}`);
                 }
                 logger.debug("Download complete");
             }
@@ -209,6 +209,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     // Logging the reception of the PUT request
     logger.info(`Received PUT request for package update with ID: ${packageId}`);
     logger.info(`Received PUT request for package update with URL: ${packageData.URL}`);
+    //logger.info(`Received PUT request for package update with Content: ${packageData.Content}`);
     try {
         // Processing the URL for npm packages
         let githubUrl = packageData.URL;
