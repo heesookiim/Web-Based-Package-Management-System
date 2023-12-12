@@ -149,7 +149,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                     [return_data.fileContent, 
                     packageMetadata.Version, 
                     url, 
-                    packageData.JSProgram,
+                    packageData.JSProgram || 'none',
                     packageRating.BusFactor,
                     packageRating.Correctness,
                     packageRating.RampUp,
@@ -201,8 +201,13 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     // Checking for missing fields in the request
     logger.debug("Check for missing fields.");
+    logger.debug(`ID: ${packageId}`);
+    const packageDataString = JSON.stringify(packageData);
+    logger.debug(`Data: ${packageDataString}`);
+    const packageMetadataString = JSON.stringify(packageMetadata);
+    logger.debug(`Metadata: ${packageMetadataString}`);
 
-    if ((!packageData.URL && !packageData.Content) || !packageId || !packageData || !packageMetadata || !packageData.JSProgram || !packageMetadata.Name || !packageMetadata.Version || !packageMetadata.ID) {
+    if ((!packageData.URL && !packageData.Content) || !packageId || !packageData || !packageMetadata || !packageMetadata.Name || !packageMetadata.Version || !packageMetadata.ID) {
         logger.error('Missing or improperly formed fields in PUT request');
         return res.status(400).json({ error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
     }
