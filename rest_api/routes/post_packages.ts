@@ -8,7 +8,8 @@ const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
     const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken || authenticationToken != '0') {
+    if(!authenticationToken) {
+        logger.info('POST packages no auth token');
         return res.status(400).json('');
     }
 

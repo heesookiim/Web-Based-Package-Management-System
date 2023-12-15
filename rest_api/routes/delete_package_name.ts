@@ -17,7 +17,8 @@ router.delete('/byName/:name', async (req: Request, res: Response) => {
         return res.status(400).json({error: 'There is missing field(s) in the PackageName/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});
     }
 
-    if(!authenticationToken || authenticationToken == '0') {
+    if(!authenticationToken) {
+        logger.info('DELETE package/byName no auth token');
         return res.status(400).json('');
     }
 

@@ -9,7 +9,8 @@ let table = `${dbName}.${tableName}`
 
 router.post('/byRegEx', async (req: Request, res: Response) => {
     const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken || authenticationToken != '0') {
+    if(!authenticationToken) {
+        logger.info('POST package/byRegEx no auth token')
         return res.status(400).json('');
     }
 
