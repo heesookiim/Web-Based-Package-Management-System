@@ -147,7 +147,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                     LICENSE_SCORE = ?,
                     PINNED_PRACTICE_SCORE = ?,
                     PULL_REQUEST_RATING_SCORE = ?,
-                    NET_SCORE  = ?,
+                    NET_SCORE  = ?
                     WHERE ID = ?`,
                     [return_data.fileContent, 
                     packageMetadata.Version,
