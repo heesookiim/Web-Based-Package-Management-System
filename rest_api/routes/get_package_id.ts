@@ -75,6 +75,7 @@ router.get('/:id', async (req: Request, res: Response) => {
         }
 
         logger.info(`returning status 200: ` + JSON.stringify(data.metadata));
+        logger.debug('Data: ' + JSON.stringify(data.data));
         return res.status(200).json(data);
     } else {
         logger.info('error: package does not exist')
