@@ -51,11 +51,8 @@ initializeDatabase()
             '-',
             tokens['response-time'](req, res),
             'ms',
-            'request: ',
             `'${JSON.stringify(req.headers)}'`,
             `'${JSON.stringify(req.body)}'`,
-            'response: ',
-            `'${JSON.stringify(res)}'`,
             ].join(' ');
         })
         );
