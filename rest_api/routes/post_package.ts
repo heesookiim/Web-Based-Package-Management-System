@@ -354,8 +354,10 @@ export async function ZIP(sourcePath: string, name: string, version: string, fil
 }
 
 export async function decodeBase64AndExtract(base64String: string, outputPath: string) {
+    logger.debug('in decodeBase64AndExtract');
     const cleanedBase64String = base64String.replace(/\s/g, '');
     const zip = new AdmZip(Buffer.from(cleanedBase64String, 'base64'));
+    logger.debug('cleaned and extracted');
 
     // Extract the contents of the zip file directly to the output path
     zip.extractAllTo(outputPath, /*overwrite*/ true);
@@ -366,6 +368,7 @@ export async function decodeBase64AndExtract(base64String: string, outputPath: s
 
     // Move the contents to 'rest_api/dump/contents'
     await fs.rename(sourcePath, destinationPath);
+    logger.debug('rename complete');
 
     // Move the contents from 'rest_api/dump/contents' to 'rest_api/dump'
     const contentsEntries = fileSystem.readdirSync(destinationPath);
@@ -374,9 +377,11 @@ export async function decodeBase64AndExtract(base64String: string, outputPath: s
         const destinationEntryPath = pathModule.join(outputPath, entry);
         await fs.rename(entryPath, destinationEntryPath);
     }
+    logger.debug('contents moved');
 
     // Remove the intermediate 'contents' folder
     await fs.rmdir(destinationPath);
+    logger.debug('end of function');
 }
 
 function deleteZipFiles(directoryPath: string): void {

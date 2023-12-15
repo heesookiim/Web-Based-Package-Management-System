@@ -75,17 +75,17 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                 if (packageData.URL) {
                     // Downloading the repository from the URL
                     logger.debug(`Downloading repo from URL: ${packageData.URL}`);
-                    await downloadRepo(packageData.URL, 'rest_api/dump');
+                    await downloadRepo(packageData.URL, 'rest_api/dump2');
                 } else {
                     // Extracting the package content from Base64 encoded data
                     logger.debug('Decoding Base64 content and extracting');
                     const content: any = packageData.Content;
 		            //logger.debug(`content: ${content}`);
-                    await decodeBase64AndExtract(content, 'rest_api/dump');
+                    await decodeBase64AndExtract(content, 'rest_api/dump2');
 
                     // get github url from package.json
                     logger.debug(`Extracting info from package.json`);
-                    const packageJsonPath = pathModule.join('rest_api/dump', 'package.json');
+                    const packageJsonPath = pathModule.join('rest_api/dump2', 'package.json');
                     const packageJsonContent = await fs.promises.readFile(packageJsonPath, 'utf-8');
 		            //logger.debug(`JSONContent: ${packageJsonContent}`);
                     const packageJson = JSON.parse(packageJsonContent);
@@ -102,7 +102,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
             }
             try {
                 // Creating a ZIP file from the downloaded content
-                return_data = await ZIP('../dump', packageMetadata.Name, packageMetadata.Version, 'rest_api');
+                return_data = await ZIP('../dump2', packageMetadata.Name, packageMetadata.Version, 'rest_api');
                 logger.info(`Updating package in the database with ID: ${packageId}`);
             }
             catch (error) {
@@ -171,8 +171,8 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
             // Initiating the deletion of all ZIP files after updating
             logger.debug('Initiating deletion of ZIP files');
             await deleteAllZipFiles('rest_api');
-            logger.info(`Deleting directory: 'rest_api/dump'`);
-            await fs.promises.rm('rest_api/dump', { recursive: true });
+            logger.info(`Deleting directory: 'rest_api/dump2'`);
+            await fs.promises.rm('rest_api/dump2', { recursive: true });
         }
         catch (error) {
             // Error handling for deleting ZIP files or directory
