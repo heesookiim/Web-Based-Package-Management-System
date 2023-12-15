@@ -235,7 +235,7 @@ export async function correctness(repositoryUrl: string) {
     state: 'all',
     per_page: 100, // Increase this value to retrieve more issues per page
     page: 1, // Start with page 1
-    since: new Date(new Date().setDate(new Date().getDate() - 365)).toISOString(), // Set to 1 year ago [Changed code]
+    //since: new Date(new Date().setDate(new Date().getDate() - 365)).toISOString(), // Set to 1 year ago [Changed code]
   };
   let totalIssues = 0;
   let totalClosedIssues = 0;
@@ -289,7 +289,7 @@ export async function responsiveMaintainer(repositoryUrl: string) {
     state: 'all',
     per_page: 100,
     page: 1,
-    since: new Date(new Date().setDate(new Date().getDate() - 365)).toISOString(), // Set to 1 year ago [Changed code]
+    //since: new Date(new Date().setDate(new Date().getDate() - 365)).toISOString(), // Set to 1 year ago [Changed code]
   };
   let totalIssues = 0;
   let totalResponseTime = 0;
