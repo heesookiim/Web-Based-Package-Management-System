@@ -39,7 +39,10 @@ initializeDatabase()
 
         // log entire incoming request
         // Define a custom token for morgan to log the entire request object as a string
-        morgan.token('request', (req) => JSON.stringify(req));
+        //morgan.token('request', (req) => JSON.stringify(req));
+        morgan.token('request', req => {
+            return JSON.stringify(http.request)
+          });
         // Use morgan middleware with the custom format
         app.use(
         morgan((tokens, req, res) => {

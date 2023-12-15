@@ -49,7 +49,7 @@ export async function analyzeDependencies(url: string) {
                     LICENSE_SCORE: LicenseResult
                 };
                 
-                logger.info('GitHub scores: ' + JSON.stringify(scores, null, 2));
+                //logger.info('GitHub scores: ' + JSON.stringify(scores, null, 2));
                 return scores;
             } else {
                 logger.error('No GitHub URL found for: ' + url);
