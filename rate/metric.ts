@@ -70,7 +70,7 @@ export async function busFactor(repositoryUrl: string) {
     });
 
     // can't divide by 0, need at least 2 contibutors above 10%
-    if(totalContributors === 0 || significantContributors < 2) {
+    if(totalContributors === 0 || significantContributors == 0) {
       logger.info('BusFactor: 0');
       return 0;
     }
@@ -346,11 +346,11 @@ export async function responsiveMaintainer(repositoryUrl: string) {
         }
         const averageResponseTime = totalResponseTime / totalIssues / 100;
         logger.info(`ResponsiveMaintainer: ${averageResponseTime}`);
-        if(averageResponseTime >= 10) {
+        if(averageResponseTime >= 20) {
           return 0;
         }
         else {
-          return parseFloat(((10 - averageResponseTime) / 10).toFixed(1));
+          return parseFloat(((20 - averageResponseTime) /20).toFixed(1));
         }
       }
     } catch (error) {
