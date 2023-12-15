@@ -8,7 +8,11 @@ let table = `${dbName}.${tableName}`
 
 router.get('/:id', async (req: Request, res: Response) => {
     const packageId: schema.PackageID = req.params.id;  // filter packageID input
-    logger.info(`GET package/${packageId}`)
+    logger.info(`GET package/${packageId}`);
+    const authenticationToken = req.headers['X-Authorization'];
+    if(!authenticationToken || authenticationToken == '0') {
+        return res.status(400).json('');
+    }
     
     // make sure ID is present in request
     if(!packageId) {

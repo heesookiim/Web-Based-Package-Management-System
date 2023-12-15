@@ -190,6 +190,11 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
 
 // PUT request handler for updating a package
 router.put('/:id', async (req: Request, res: Response) => {
+    const authenticationToken = req.headers['X-Authorization'];
+    if(!authenticationToken || authenticationToken == '0') {
+        return res.status(400).json('');
+    }
+    
     logger.info('PUT package/:id');
 
     // Extracting package information from the request parameters
