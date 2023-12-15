@@ -8,10 +8,10 @@ const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
     const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken || authenticationToken == '0') {
+    if(!authenticationToken || authenticationToken != '0') {
         return res.status(400).json('');
     }
-    
+
     logger.info('POST /packages performed');
 
     let offset = 0;

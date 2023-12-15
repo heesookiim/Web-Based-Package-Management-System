@@ -8,7 +8,7 @@ let table = `${dbName}.${tableName}`
 
 router.get('/:id/rate', async (req: Request, res: Response) => {
     const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken || authenticationToken == '0') {
+    if(!authenticationToken || authenticationToken != '0') {
         return res.status(400).json('');
     }
 

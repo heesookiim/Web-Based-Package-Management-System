@@ -22,10 +22,10 @@ let table = `${dbName}.${tableName}`
 
 router.post('/', async (req: Request, res: Response) => {
     const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken || authenticationToken == '0') {
+    if(!authenticationToken || authenticationToken != '0') {
         return res.status(400).json('');
     }
-    
+
     logger.info('POST package/');
     const { Content, JSProgram, URL } = req.body as schema.PackageData;
     //logger.info(`Iniitiating POST request for ${req}`);

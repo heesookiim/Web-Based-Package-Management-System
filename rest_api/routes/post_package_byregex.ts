@@ -9,10 +9,10 @@ let table = `${dbName}.${tableName}`
 
 router.post('/byRegEx', async (req: Request, res: Response) => {
     const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken || authenticationToken == '0') {
+    if(!authenticationToken || authenticationToken != '0') {
         return res.status(400).json('');
     }
-    
+
     const { RegEx: regex } = req.body as schema.PackageRegEx;
     logger.info(`POST package/byRegEx: ${regex}`);
     if (!regex) {
