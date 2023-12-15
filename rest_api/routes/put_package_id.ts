@@ -112,7 +112,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
             }
 
             // Fetching the rating of the package
-            /*let packageRating : PackageRating;
+            let packageRating : PackageRating;
             try {
                 logger.debug(`Getting rating of package in PUT`);
                 packageRating = await getAllRatings(url || '');
@@ -120,7 +120,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                 // Error handling for fetching package rating
                 logger.error(`Error fetching package rating: ${error}`);
                 throw new Error('500');
-            }*/
+            }
 
             // Checking if the package rating meets the specified criteria
             /*if (packageRating && (packageRating.NetScore < 0.5 || packageRating.BusFactor < 0.5 || packageRating.Correctness < 0.5 || 
@@ -135,7 +135,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                 logger.debug(`Updating package in the database with the following version: ${version}`);
                 //logger.debug(`Updating package in the database with the following rating: ${packageRatingString}`);
                 // Updating the package in the database
-                /*await connection.execute(
+                await connection.execute(
                     `UPDATE ${table} SET 
                     Content = ?, 
                     Version = ?, 
@@ -160,16 +160,6 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                     packageRating.GoodPinningPractice,
                     packageRating.PullRequest,
                     packageRating.NetScore,
-                    packageId]);*/
-                await connection.execute(
-                    `UPDATE ${table} SET 
-                    Content = ?, 
-                    Version = ?, 
-                    URL = ?,
-                    WHERE ID = ?`,
-                    [return_data.fileContent, 
-                    packageMetadata.Version,
-                    url, 
                     packageId]);
 
             } catch (error) {
