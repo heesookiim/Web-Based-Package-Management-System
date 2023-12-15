@@ -76,7 +76,7 @@
                 <div class="form-group mb-4">
 
                     <label for="jsProgram" class="form-label">A JavaScript program (for use with sensitive modules)</label>
-                    <span class="required-text text-danger">*</span>
+                    <!--<span class="required-text text-danger">*</span>-->
                     <input class="form-control" title="Insert a JavaScript program (required)" id="jsProgram" contenteditable="true">
                 </div>
 
@@ -172,6 +172,8 @@
                 const response = await axios.post('http://3.139.239.92:6123/package', {
                     URL: url,
                     JSProgram: jsProgram
+                }, {
+                    headers: {'X-Authorization': '0'}
                 });
                 document.getElementById('result').innerHTML = `<div class="alert alert-success" role="alert">
                                                            Your Package has been approved and added successfully to the registry!
@@ -190,7 +192,10 @@
                     await axios.post('http://3.139.239.92:6123/package', {
                         Content: base64Content,
                         JSProgram: jsProgram
-                    });
+                    }, {
+                        headers: {'X-Authorization': '0'}
+                    }
+                    );
 
 
                     document.getElementById('result').innerHTML = `<div class="alert alert-success" role="alert">
