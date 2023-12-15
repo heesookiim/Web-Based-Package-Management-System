@@ -60,15 +60,15 @@ router.get('/:id', async (req: Request, res: Response) => {
             ID: packageFound[0][0].ID
         };
         let packageData: schema.PackageData = {};
-        if(packageFound[0][0].JSProgram != '') {
-            packageData.JSProgram = packageFound[0][0].JSProgram
-        };
         if(packageFound[0][0].Content) {
             packageData.Content = packageFound[0][0].Content;
         }
-        if(packageFound[0][0].URL) {
-            packageData.URL = packageFound[0][0].URL;
+        if(packageFound[0][0].JSProgram) {
+            packageData.JSProgram = packageFound[0][0].JSProgram
         }
+        /*if(packageFound[0][0].URL) {
+            packageData.URL = packageFound[0][0].URL;
+        }*/
         const data: schema.Package = {  // data and metadata for package, used for response
             metadata: packageMetadata,
             data: packageData
