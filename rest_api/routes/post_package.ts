@@ -231,12 +231,14 @@ router.post('/', async (req: Request, res: Response) => {
     if (URL) {
         responseData = {
             metadata: { Name: name, Version: version, ID: id },
-            data: { URL, JSProgram }
+            //data: { URL, JSProgram }
+            data: { URL }
         };
     } else {
         responseData = {
             metadata: { Name: name, Version: version, ID: id },
-            data: { Content, JSProgram }
+            //data: { Content, JSProgram }
+            data: { Content }
         }
     }
 

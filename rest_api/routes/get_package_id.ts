@@ -59,9 +59,10 @@ router.get('/:id', async (req: Request, res: Response) => {
             Version: packageFound[0][0].Version,
             ID: packageFound[0][0].ID
         };
-        let packageData: schema.PackageData = {
-            JSProgram: packageFound[0][0].JSProgram
-        };
+        let packageData: schema.PackageData = {};
+        //if(packageFound[0][0].JSProgram != '') {
+        //    packageData.JSProgram = packageFound[0][0].JSProgram
+        //};
         if(packageFound[0][0].Content) {
             packageData.Content = packageFound[0][0].Content;
         }
