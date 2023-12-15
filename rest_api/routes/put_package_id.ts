@@ -206,9 +206,9 @@ router.put('/:id', async (req: Request, res: Response) => {
     logger.debug("Check for missing fields.");
     logger.debug(`ID: ${packageId}`);
     const packageDataString = JSON.stringify(packageData);
-    logger.debug(`Data: ${packageDataString}`);
+    //logger.debug(`Data: ${packageDataString}`);
     const packageMetadataString = JSON.stringify(packageMetadata);
-    logger.debug(`Metadata: ${packageMetadataString}`);
+    //logger.debug(`Metadata: ${packageMetadataString}`);
 
     if ((!packageData.URL && !packageData.Content) || !packageId || !packageData || !packageMetadata || !packageMetadata.Name || !packageMetadata.Version || !packageMetadata.ID) {
         logger.error('Missing or improperly formed fields in PUT request');
