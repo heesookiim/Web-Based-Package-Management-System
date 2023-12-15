@@ -26,6 +26,7 @@ const app = express();
 app.use(bodyParser.json({ limit: '4096mb' }));
 app.use(bodyParser.urlencoded({ limit: '4096mb', extended: true }));
 app.use(express.json());
+app.use(bodyParser.json());
 
 // Check the database and initialize it before starting the server
 let server: http.Server
@@ -39,10 +40,7 @@ initializeDatabase()
 
         // log entire incoming request
         // Define a custom token for morgan to log the entire request object as a string
-        //morgan.token('request', (req) => JSON.stringify(req));
-        morgan.token('request', req => {
-            return JSON.stringify(http.request)
-          });
+        //morgan.token('request', (req) => JSON.stringify(req));      
         // Use morgan middleware with the custom format
         app.use(
         morgan((tokens, req, res) => {
@@ -53,7 +51,8 @@ initializeDatabase()
             '-',
             tokens['response-time'](req, res),
             'ms',
-            tokens.request(req, res),
+            `'${JSON.stringify(req.headers)}'`,
+            `'${JSON.stringify(req.body)}'`,
             ].join(' ');
         })
         );
