@@ -215,7 +215,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const packageMetadataString = JSON.stringify(packageMetadata);
     //logger.debug(`Metadata: ${packageMetadataString}`);
 
-    if ((!packageData.URL && !packageData.Content) || !packageId || !packageData || !packageMetadata || !packageMetadata.Name || !packageMetadata.Version || !packageMetadata.ID) {
+    if (!packageData || (!packageData.URL && !packageData.Content) || !packageId || !packageMetadata || !packageMetadata.Name || !packageMetadata.Version || !packageMetadata.ID) {
         logger.error('Missing or improperly formed fields in PUT request');
         return res.status(400).json({ error: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
     }
@@ -223,7 +223,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     logger.info(`Received PUT request for package update with ID: ${packageId}`);
     logger.debug(`Received PUT request for package update with URL: ${packageData.URL}`);
     logger.debug(`Received PUT request for package update with Content: ${packageData.Content}`);
-    logger.debug('Received PUT request for package update with metadata: ' + JSON.stringify(packageMetadata));
+    logger.info('Received PUT request for package update with metadata: ' + JSON.stringify(packageMetadata));
     try {
         // Processing the URL for npm packages
         let githubUrl = packageData.URL;

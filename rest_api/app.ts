@@ -37,8 +37,23 @@ initializeDatabase()
         // console.log('API running on port ' + PORT);
         });
 
-        // incoming request logs
-        app.use(morgan('combined'));
+        // log entire incoming request
+        // Define a custom token for morgan to log the entire request object as a string
+        morgan.token('request', (req) => JSON.stringify(req));
+        // Use morgan middleware with the custom format
+        app.use(
+        morgan((tokens, req, res) => {
+            return [
+            tokens.method(req, res),
+            tokens.url(req, res),
+            tokens.status(req, res),
+            '-',
+            tokens['response-time'](req, res),
+            'ms',
+            tokens.request(req, res),
+            ].join(' ');
+        })
+        );
         
         // Setup the routes, order matters
         // more specific should come before more general
