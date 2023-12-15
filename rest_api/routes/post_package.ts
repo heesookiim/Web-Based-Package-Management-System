@@ -21,8 +21,8 @@ const readFileAsync = promisify(fileSystem.readFile);
 let table = `${dbName}.${tableName}`
 
 router.post('/', async (req: Request, res: Response) => {
-    const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken) {
+    const authenticationToken = req.get('X-Authorization');
+    if(!authenticationToken || authenticationToken !== '0') {
         logger.info('POST package no auth token');
         return res.status(400).json('');
     }

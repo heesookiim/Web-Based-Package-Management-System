@@ -7,8 +7,8 @@ const router = Router();
 let table = `${dbName}.${tableName}`
 
 router.get('/:id/rate', async (req: Request, res: Response) => {
-    const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken) {
+    const authenticationToken = req.get('X-Authorization');
+    if(!authenticationToken || authenticationToken !== '0') {
         logger.info('GET package/id/rate no auth token');
         return res.status(400).json('');
     }

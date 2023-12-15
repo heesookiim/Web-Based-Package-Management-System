@@ -7,8 +7,9 @@ let table = `${dbName}.${tableName}`
 
 router.delete('/', async (req: Request, res: Response) => {
     logger.info('DELETE reset');
-    const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken) {
+    const authenticationToken = req.get('X-Authorization');
+    logger.info(`Authentication token: ${authenticationToken}`)
+    if(!authenticationToken || authenticationToken !== '0') {
         logger.info('DELETE reset no auth token');
         return res.status(400).json('');
     }

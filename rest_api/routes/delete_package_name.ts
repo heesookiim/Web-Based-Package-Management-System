@@ -8,7 +8,7 @@ let table = `${dbName}.${tableName}`
 
 router.delete('/byName/:name', async (req: Request, res: Response) => {
     const packageName: schema.PackageID = req.params.name;  // filter packageID input
-    const authenticationToken = req.headers['X-Authorization'];
+    const authenticationToken = req.get('X-Authorization');
     logger.info(`DELETE package/${packageName}`)
     
     // make sure ID is present in request
@@ -17,7 +17,7 @@ router.delete('/byName/:name', async (req: Request, res: Response) => {
         return res.status(400).json({error: 'There is missing field(s) in the PackageName/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.'});
     }
 
-    if(!authenticationToken) {
+    if(!authenticationToken || authenticationToken !== '0') {
         logger.info('DELETE package/byName no auth token');
         return res.status(400).json('');
     }

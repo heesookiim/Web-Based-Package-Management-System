@@ -9,8 +9,8 @@ let table = `${dbName}.${tableName}`
 router.get('/:id', async (req: Request, res: Response) => {
     const packageId: schema.PackageID = req.params.id;  // filter packageID input
     logger.info(`GET package/${packageId}`);
-    const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken) {
+    const authenticationToken = req.get('X-Authorization');
+    if(!authenticationToken || authenticationToken !== '0') {
         logger.info('Get package no auth token');
         return res.status(400).json('');
     }

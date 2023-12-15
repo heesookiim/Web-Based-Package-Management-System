@@ -7,8 +7,8 @@ import { logger } from '../../logger_cfg';
 const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
-    const authenticationToken = req.headers['X-Authorization'];
-    if(!authenticationToken) {
+    const authenticationToken = req.get('X-Authorization');
+    if(!authenticationToken || authenticationToken !== '0') {
         logger.info('POST packages no auth token');
         return res.status(400).json('');
     }
