@@ -9,6 +9,12 @@ let table = `${dbName}.${tableName}`
 router.delete('/:id', async (req: Request, res: Response) => {
     const packageId: schema.PackageID = req.params.id;  // filter packageID input
     logger.info(`DELETE package/${packageId}`)
+    const authenticationToken = req.get('X-Authorization');
+    logger.info(`Authentication token: ${authenticationToken}`)
+    if(!authenticationToken || authenticationToken !== '0') {
+        logger.info('DELETE package/byName no auth token');
+        return res.status(400).json('');
+    }
     
     // make sure ID is present in request
     if(!packageId) {

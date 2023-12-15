@@ -130,6 +130,10 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
             }*/
             
             try {
+                const version = packageMetadata.Version;
+                const packageRatingString = JSON.stringify(packageRating);
+                logger.debug(`Updating package in the database with the following version: ${version}`);
+                logger.debug(`Updating package in the database with the following rating: ${packageRatingString}`);
                 // Updating the package in the database
                 await connection.execute(
                     `UPDATE ${table} SET 
@@ -146,7 +150,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                     NET_SCORE  = ?
                     WHERE ID = ?`,
                     [return_data.fileContent, 
-                    packageMetadata.Version, 
+                    packageMetadata.Version,
                     url, 
                     packageRating.BusFactor,
                     packageRating.Correctness,
@@ -155,7 +159,7 @@ async function updatePackage(packageId: PackageID, packageData: PackageData, pac
                     packageRating.LicenseScore,
                     packageRating.GoodPinningPractice,
                     packageRating.PullRequest,
-                    packageRating.NetScore, 
+                    packageRating.NetScore,
                     packageId]);
             } catch (error) {
                 // Error handling for the database update process
@@ -217,8 +221,9 @@ router.put('/:id', async (req: Request, res: Response) => {
     }
     // Logging the reception of the PUT request
     logger.info(`Received PUT request for package update with ID: ${packageId}`);
-    logger.info(`Received PUT request for package update with URL: ${packageData.URL}`);
-    //logger.info(`Received PUT request for package update with Content: ${packageData.Content}`);
+    logger.debug(`Received PUT request for package update with URL: ${packageData.URL}`);
+    logger.debug(`Received PUT request for package update with Content: ${packageData.Content}`);
+    logger.debug('Received PUT request for package update with metadata: ' + JSON.stringify(packageMetadata));
     try {
         // Processing the URL for npm packages
         let githubUrl = packageData.URL;
