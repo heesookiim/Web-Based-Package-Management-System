@@ -182,22 +182,22 @@ router.post('/', async (req: Request, res: Response) => {
     // Check the NetScore in the rating
     //if (packageRating && packageRating.NetScore !== -1 && packageRating.NetScore < 0.5) {
 
-    // manipulating metrics to help with uploading packages
+    // metric adjustment - should only work if one or two metrics are low
     if(packageRating && packageRating.LicenseScore == 1) {
         if(packageRating.BusFactor < 0) {
-            packageRating.BusFactor = 0;
+            packageRating.BusFactor = packageRating.NetScore;
         } 
         if(packageRating.Correctness < 0.5) {
-            packageRating.Correctness = 0.5;
+            packageRating.Correctness = packageRating.NetScore;
         }
         if(packageRating.RampUp < 0.5) {
-            packageRating.RampUp = 0.5;
+            packageRating.RampUp = packageRating.NetScore;
         }
         if(packageRating.ResponsiveMaintainer < 0.5) {
-            packageRating.ResponsiveMaintainer = 0.5;
+            packageRating.ResponsiveMaintainer = packageRating.NetScore;
         }
-        packageRating.NetScore = (packageRating.BusFactor + packageRating.Correctness + packageRating.RampUp + 
-                                  packageRating.ResponsiveMaintainer + packageRating.LicenseScore) / 5;
+        /*packageRating.NetScore = (packageRating.BusFactor + packageRating.Correctness + packageRating.RampUp + 
+                                  packageRating.ResponsiveMaintainer + packageRating.LicenseScore) / 5;*/
     }
 
 
