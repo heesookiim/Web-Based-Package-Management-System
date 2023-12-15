@@ -40,7 +40,7 @@ router.post('/', async (req: Request, res: Response) => {
     });
 
     /** checks if only either Content or URL is being passsed when inserting a package **/
-    if (!((Content && JSProgram && !URL) || (URL && JSProgram && !Content))) {
+    if (!((Content && !URL) || (URL && !Content))) {
         logger.error(`Failed POST request. Error 400`);
         return res.status(400).json({
             error: "There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly (e.g. Content and URL are both set), or the AuthenticationToken is invalid.",
@@ -203,7 +203,7 @@ router.post('/', async (req: Request, res: Response) => {
                name,
                version,
                url,
-               JSProgram,
+               JSProgram || '',
                fileContent,
                packageRating.BusFactor,
                packageRating.Correctness,

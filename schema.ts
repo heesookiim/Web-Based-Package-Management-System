@@ -8,7 +8,7 @@ export interface PackageMetadata {
 export interface PackageData {
   Content?: string;
   URL?: string;
-  JSProgram: string;
+  JSProgram?: string;
 }
 
 export interface Package {
