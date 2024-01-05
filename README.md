@@ -2,8 +2,6 @@
 
 Fall 2023 Purdue ECE 461 Project Phase 2 by group 8.
 
-# 
-
 Built a web-based package management system that has following functionalities.  
 - upload, update, and download packages.  
 - Rating metric (see the details below).  
