@@ -26,6 +26,8 @@ Packages are rated based on the following metrics
 
 Finally the Net score of a repository is calculated using the following formula Net Score = (license compatibility score)* (correctness score + 3* responsiveness score + Bus Factor + 2 * low-ramp up time + code_quality_score + version_score) / 10
 
+#
+
 ### Installation
 
 Step-by-step instructions on how to install and run the project.
